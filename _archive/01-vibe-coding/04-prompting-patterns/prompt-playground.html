@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>프롬프트 빌더 - 바이브 코딩 연습</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0f1117;
+    color: #e1e4e8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #21262d;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  header h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f0f6fc;
+  }
+
+  header span {
+    font-size: 13px;
+    color: #8b949e;
+  }
+
+  .presets {
+    padding: 12px 24px;
+    border-bottom: 1px solid #21262d;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .presets label {
+    font-size: 12px;
+    color: #8b949e;
+    margin-right: 4px;
+  }
+
+  .preset-btn {
+    padding: 4px 12px;
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 20px;
+    color: #c9d1d9;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .preset-btn:hover { background: #30363d; border-color: #58a6ff; color: #58a6ff; }
+  .preset-btn.active { background: #1f4068; border-color: #58a6ff; color: #58a6ff; }
+
+  .main {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .controls {
+    padding: 20px;
+    border-right: 1px solid #21262d;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8b949e;
+    margin-bottom: 10px;
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  label {
+    font-size: 13px;
+    color: #c9d1d9;
+  }
+
+  select, textarea, input[type="text"] {
+    width: 100%;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #e1e4e8;
+    font-size: 13px;
+    padding: 8px 10px;
+    transition: border-color 0.15s;
+    font-family: inherit;
+  }
+
+  select:focus, textarea:focus, input[type="text"]:focus {
+    outline: none;
+    border-color: #58a6ff;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 70px;
+    line-height: 1.5;
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+  }
+
+  .toggle-row label {
+    font-size: 13px;
+    color: #c9d1d9;
+  }
+
+  .toggle {
+    position: relative;
+    width: 36px;
+    height: 20px;
+  }
+
+  .toggle input { opacity: 0; width: 0; height: 0; }
+
+  .slider {
+    position: absolute;
+    inset: 0;
+    background: #30363d;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .slider:before {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    left: 3px; top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+
+  .toggle input:checked + .slider { background: #238636; }
+  .toggle input:checked + .slider:before { transform: translateX(16px); }
+
+  .chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .chip {
+    padding: 4px 10px;
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #8b949e;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .chip:hover { border-color: #58a6ff; color: #58a6ff; }
+  .chip.active { background: #1f4068; border-color: #58a6ff; color: #58a6ff; }
+
+  .preview {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 16px;
+    overflow-y: auto;
+  }
+
+  .preview-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8b949e;
+  }
+
+  .prompt-display {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: #e1e4e8;
+    white-space: pre-wrap;
+    word-break: break-word;
+    flex: 1;
+    min-height: 200px;
+  }
+
+  .prompt-display .label {
+    color: #8b949e;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .prompt-display .role { color: #d2a8ff; }
+  .prompt-display .context { color: #79c0ff; }
+  .prompt-display .task { color: #56d364; }
+  .prompt-display .constraint { color: #ffa657; }
+  .prompt-display .format { color: #f0883e; }
+  .prompt-display .example { color: #a5d6ff; }
+
+  .score-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .score-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .score-label { font-size: 12px; color: #8b949e; }
+
+  .score-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #56d364;
+  }
+
+  .score-track {
+    height: 6px;
+    background: #21262d;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .score-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #238636, #56d364);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .tips {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 12px;
+    color: #8b949e;
+    line-height: 1.6;
+  }
+
+  .tips strong { color: #c9d1d9; }
+
+  .bottom-bar {
+    border-top: 1px solid #21262d;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .bottom-label {
+    font-size: 12px;
+    color: #8b949e;
+    flex: 1;
+  }
+
+  .copy-btn {
+    padding: 8px 20px;
+    background: #238636;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .copy-btn:hover { background: #2ea043; }
+  .copy-btn.copied { background: #1f6feb; }
+
+  .divider {
+    height: 1px;
+    background: #21262d;
+    margin: 4px 0;
+  }
+
+  @media (max-width: 768px) {
+    .main { grid-template-columns: 1fr; }
+    .controls { border-right: none; border-bottom: 1px solid #21262d; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎯 프롬프트 빌더</h1>
+  <span>바이브 코딩 실습 도구 — 좋은 프롬프트를 조립해보세요</span>
+</header>
+
+<div class="presets">
+  <label>프리셋:</label>
+  <button class="preset-btn" onclick="applyPreset('landing')">랜딩 페이지 만들기</button>
+  <button class="preset-btn" onclick="applyPreset('debug')">에러 디버깅</button>
+  <button class="preset-btn" onclick="applyPreset('refactor')">코드 리팩토링</button>
+  <button class="preset-btn" onclick="applyPreset('api')">API 설계</button>
+  <button class="preset-btn" onclick="applyPreset('review')">코드 리뷰</button>
+</div>
+
+<div class="main">
+  <div class="controls">
+
+    <div>
+      <div class="section-title">역할 부여 (Role)</div>
+      <div class="control-group">
+        <select id="role" onchange="updateAll()">
+          <option value="">없음 (기본)</option>
+          <option value="UX 디자이너">UX 디자이너</option>
+          <option value="시니어 프론트엔드 개발자">시니어 프론트엔드 개발자</option>
+          <option value="백엔드 아키텍트">백엔드 아키텍트</option>
+          <option value="보안 전문가">보안 전문가</option>
+          <option value="기술 문서 작성자">기술 문서 작성자</option>
+          <option value="데이터 분석가">데이터 분석가</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">컨텍스트 (Context)</div>
+      <div class="control-group">
+        <textarea id="context" rows="3" placeholder="현재 상황을 설명해주세요&#10;예: React + TypeScript 프로젝트, 쇼핑몰 서비스" oninput="updateAll()"></textarea>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">핵심 요청 (Task)</div>
+      <div class="control-group">
+        <textarea id="task" rows="2" placeholder="무엇을 만들거나 해결해야 하나요?" oninput="updateAll()"></textarea>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">제약 조건 (Constraints)</div>
+      <div class="chip-group" id="constraintChips">
+        <span class="chip" onclick="toggleChip(this, 'noLibs')">외부 라이브러리 금지</span>
+        <span class="chip" onclick="toggleChip(this, 'responsive')">반응형 필수</span>
+        <span class="chip" onclick="toggleChip(this, 'a11y')">접근성 고려</span>
+        <span class="chip" onclick="toggleChip(this, 'noAnimation')">애니메이션 없음</span>
+        <span class="chip" onclick="toggleChip(this, 'typescript')">TypeScript 사용</span>
+        <span class="chip" onclick="toggleChip(this, 'noAny')">any 타입 금지</span>
+        <span class="chip" onclick="toggleChip(this, 'comments')">주석 포함</span>
+      </div>
+      <input type="text" id="customConstraint" placeholder="추가 제약 조건 직접 입력..." oninput="updateAll()" style="margin-top:8px">
+    </div>
+
+    <div>
+      <div class="section-title">출력 형식 (Format)</div>
+      <div class="control-group">
+        <select id="format" onchange="updateAll()">
+          <option value="">없음</option>
+          <option value="단계별 설명과 함께">단계별 설명과 함께</option>
+          <option value="코드만 (설명 없이)">코드만 (설명 없이)</option>
+          <option value="Before/After 비교로">Before/After 비교로</option>
+          <option value="번호 목록으로 정리해서">번호 목록으로 정리해서</option>
+          <option value="주석이 포함된 코드로">주석이 포함된 코드로</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title">옵션</div>
+      <div class="toggle-row">
+        <label>예시 포함 요청</label>
+        <label class="toggle"><input type="checkbox" id="includeExample" onchange="updateAll()"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <label>대안도 같이 제시</label>
+        <label class="toggle"><input type="checkbox" id="includeAlternative" onchange="updateAll()"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <label>단계적으로 확인하며 진행</label>
+        <label class="toggle"><input type="checkbox" id="stepByStep" onchange="updateAll()"><span class="slider"></span></label>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="preview">
+    <div class="preview-title">생성된 프롬프트 미리보기</div>
+
+    <div class="prompt-display" id="promptDisplay">
+      왼쪽에서 옵션을 선택하면 프롬프트가 여기에 나타납니다.
+    </div>
+
+    <div class="score-bar">
+      <div class="score-header">
+        <span class="score-label">프롬프트 품질 점수</span>
+        <span class="score-value" id="scoreValue">0점</span>
+      </div>
+      <div class="score-track">
+        <div class="score-fill" id="scoreFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="tips" id="tips">
+      컨텍스트와 핵심 요청을 입력하면 품질 점수와 개선 팁이 표시됩니다.
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <span class="bottom-label" id="promptLength">프롬프트 길이: 0자</span>
+  <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">프롬프트 복사</button>
+</div>
+
+<script>
+  const DEFAULTS = {
+    role: '',
+    context: '',
+    task: '',
+    format: '',
+    includeExample: false,
+    includeAlternative: false,
+    stepByStep: false,
+    constraints: new Set(),
+    customConstraint: ''
+  };
+
+  const state = { ...DEFAULTS, constraints: new Set() };
+
+  const constraintLabels = {
+    noLibs: '외부 라이브러리 없이 순수 HTML/CSS/JS로',
+    responsive: '모바일 반응형으로',
+    a11y: '웹 접근성(WCAG 2.1)을 고려해서',
+    noAnimation: '애니메이션 없이',
+    typescript: 'TypeScript를 사용해서',
+    noAny: 'any 타입 없이',
+    comments: '코드에 설명 주석을 포함해서'
+  };
+
+  const presets = {
+    landing: {
+      role: 'UX 디자이너',
+      context: '스타트업의 SaaS 제품을 위한 랜딩 페이지를 만들고 있어',
+      task: '히어로 섹션, 기능 소개, CTA 버튼이 포함된 랜딩 페이지를 만들어줘',
+      format: '단계별 설명과 함께',
+      includeExample: false,
+      includeAlternative: false,
+      stepByStep: true,
+      constraints: new Set(['responsive', 'a11y']),
+      customConstraint: ''
+    },
+    debug: {
+      role: '시니어 프론트엔드 개발자',
+      context: 'React 앱에서 다음 에러가 발생했어:\nTypeError: Cannot read properties of undefined (reading \'map\')',
+      task: '원인을 분석하고 해결 방법을 알려줘',
+      format: '단계별 설명과 함께',
+      includeExample: true,
+      includeAlternative: true,
+      stepByStep: false,
+      constraints: new Set(),
+      customConstraint: ''
+    },
+    refactor: {
+      role: '백엔드 아키텍트',
+      context: 'Node.js Express API 서버, 콜백 지옥으로 작성된 레거시 코드',
+      task: '이 코드를 async/await 패턴으로 리팩토링해줘',
+      format: 'Before/After 비교로',
+      includeExample: false,
+      includeAlternative: false,
+      stepByStep: false,
+      constraints: new Set(['typescript', 'comments']),
+      customConstraint: ''
+    },
+    api: {
+      role: '백엔드 아키텍트',
+      context: '사용자 인증이 필요한 할 일 관리 앱을 만들고 있어',
+      task: 'RESTful API 엔드포인트 설계를 도와줘',
+      format: '번호 목록으로 정리해서',
+      includeExample: true,
+      includeAlternative: false,
+      stepByStep: false,
+      constraints: new Set(['typescript']),
+      customConstraint: 'JWT 인증 방식 사용'
+    },
+    review: {
+      role: '보안 전문가',
+      context: '프로덕션 배포 전 최종 코드 리뷰 단계',
+      task: '아래 코드의 보안 취약점을 찾아줘',
+      format: '번호 목록으로 정리해서',
+      includeExample: false,
+      includeAlternative: true,
+      stepByStep: false,
+      constraints: new Set(),
+      customConstraint: '각 이슈는 심각도(High/Medium/Low)와 함께 표시해줘'
+    }
+  };
+
+  function applyPreset(name) {
+    const p = presets[name];
+    document.getElementById('role').value = p.role;
+    document.getElementById('context').value = p.context;
+    document.getElementById('task').value = p.task;
+    document.getElementById('format').value = p.format;
+    document.getElementById('includeExample').checked = p.includeExample;
+    document.getElementById('includeAlternative').checked = p.includeAlternative;
+    document.getElementById('stepByStep').checked = p.stepByStep;
+    document.getElementById('customConstraint').value = p.customConstraint;
+
+    state.constraints = new Set(p.constraints);
+    document.querySelectorAll('.chip').forEach(chip => {
+      chip.classList.toggle('active', p.constraints.has(chip.getAttribute('onclick').match(/'([^']+)'/)[1]));
+    });
+
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+
+    updateAll();
+  }
+
+  function toggleChip(el, key) {
+    if (state.constraints.has(key)) {
+      state.constraints.delete(key);
+      el.classList.remove('active');
+    } else {
+      state.constraints.add(key);
+      el.classList.add('active');
+    }
+    updateAll();
+  }
+
+  function buildPrompt() {
+    const role = document.getElementById('role').value;
+    const context = document.getElementById('context').value.trim();
+    const task = document.getElementById('task').value.trim();
+    const format = document.getElementById('format').value;
+    const includeExample = document.getElementById('includeExample').checked;
+    const includeAlternative = document.getElementById('includeAlternative').checked;
+    const stepByStep = document.getElementById('stepByStep').checked;
+    const customConstraint = document.getElementById('customConstraint').value.trim();
+
+    const parts = [];
+
+    if (role) parts.push(`[역할] 너는 ${role}야.\n`);
+    if (context) parts.push(`[상황] ${context}\n`);
+    if (task) parts.push(`[요청] ${task}`);
+
+    const constraints = [];
+    state.constraints.forEach(key => {
+      if (constraintLabels[key]) constraints.push(constraintLabels[key]);
+    });
+    if (customConstraint) constraints.push(customConstraint);
+    if (constraints.length > 0) {
+      parts.push(`\n[조건]\n${constraints.map(c => `- ${c}`).join('\n')}`);
+    }
+
+    if (format) parts.push(`\n[형식] ${format} 결과를 줘`);
+    if (includeExample) parts.push('\n예시 코드도 함께 보여줘');
+    if (includeAlternative) parts.push('\n다른 접근 방법도 1가지 제안해줘');
+    if (stepByStep) parts.push('\n작업 전에 계획을 먼저 알려주고, 내가 확인하면 진행해줘');
+
+    return parts.join('\n');
+  }
+
+  function calcScore() {
+    const role = document.getElementById('role').value;
+    const context = document.getElementById('context').value.trim();
+    const task = document.getElementById('task').value.trim();
+    const format = document.getElementById('format').value;
+
+    let score = 0;
+    if (task.length > 10) score += 30;
+    else if (task.length > 0) score += 10;
+    if (context.length > 20) score += 25;
+    else if (context.length > 0) score += 10;
+    if (role) score += 15;
+    if (state.constraints.size > 0) score += 15;
+    if (format) score += 10;
+    if (document.getElementById('includeExample').checked) score += 5;
+
+    return Math.min(score, 100);
+  }
+
+  function getTips(score) {
+    const tips = [];
+    const task = document.getElementById('task').value.trim();
+    const context = document.getElementById('context').value.trim();
+    const role = document.getElementById('role').value;
+
+    if (!task) tips.push('<strong>핵심 요청</strong>을 입력하세요 — 가장 중요한 부분입니다');
+    else if (task.length < 15) tips.push('요청이 너무 짧아요. 더 구체적으로 적어보세요');
+
+    if (!context && task) tips.push('<strong>컨텍스트</strong>를 추가하면 AI가 더 정확하게 이해합니다');
+    if (!role && task) tips.push('<strong>역할</strong>을 부여하면 관점이 달라져 더 좋은 결과가 나옵니다');
+    if (state.constraints.size === 0 && task) tips.push('<strong>제약 조건</strong>을 추가하면 원치 않는 결과를 예방합니다');
+
+    if (score >= 80) return '훌륭한 프롬프트입니다! 이 구조를 기억해두세요.';
+    if (score >= 60) return tips.length > 0 ? `개선 포인트: ${tips[0]}` : '좋은 프롬프트입니다. 조금 더 구체화해보세요.';
+    return tips.length > 0 ? `💡 ${tips[0]}` : '왼쪽 옵션을 채워서 프롬프트를 완성해보세요.';
+  }
+
+  function renderPrompt(text) {
+    if (!text) return '<span style="color:#8b949e">왼쪽에서 옵션을 선택하면 프롬프트가 여기에 나타납니다.</span>';
+
+    return text
+      .replace(/\[역할\]/g, '<span class="role">[역할]</span>')
+      .replace(/\[상황\]/g, '<span class="context">[상황]</span>')
+      .replace(/\[요청\]/g, '<span class="task">[요청]</span>')
+      .replace(/\[조건\]/g, '<span class="constraint">[조건]</span>')
+      .replace(/\[형식\]/g, '<span class="format">[형식]</span>');
+  }
+
+  function updateAll() {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+
+    const prompt = buildPrompt();
+    const score = calcScore();
+
+    document.getElementById('promptDisplay').innerHTML = renderPrompt(prompt);
+
+    const scoreEl = document.getElementById('scoreValue');
+    const fillEl = document.getElementById('scoreFill');
+    scoreEl.textContent = score + '점';
+    scoreEl.style.color = score >= 80 ? '#56d364' : score >= 50 ? '#ffa657' : '#f85149';
+    fillEl.style.width = score + '%';
+    fillEl.style.background = score >= 80
+      ? 'linear-gradient(90deg, #238636, #56d364)'
+      : score >= 50
+        ? 'linear-gradient(90deg, #9e6a03, #ffa657)'
+        : 'linear-gradient(90deg, #8a1515, #f85149)';
+
+    document.getElementById('tips').innerHTML = getTips(score);
+    document.getElementById('promptLength').textContent = `프롬프트 길이: ${prompt.length}자`;
+  }
+
+  function copyPrompt() {
+    const prompt = buildPrompt();
+    if (!prompt) return;
+
+    navigator.clipboard.writeText(prompt).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '복사됨 ✓';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = '프롬프트 복사';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  updateAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 에이전트와 바이브 코딩</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+    background: #0d0d0d;
+    color: #e5e5e5;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── 좌측 사이드바 ── */
+  #sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: #141414;
+    border-right: 1px solid #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #sidebar-header {
+    padding: 20px 16px 12px;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  #sidebar-header .logo {
+    font-size: 13px;
+    color: #888;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  #sidebar-header .title {
+    font-size: 12px;
+    color: #f59e0b;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  #sidebar-label {
+    padding: 14px 16px 6px;
+    font-size: 11px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  #toc {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0 16px;
+  }
+
+  #toc::-webkit-scrollbar { width: 4px; }
+  #toc::-webkit-scrollbar-track { background: transparent; }
+  #toc::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+  .toc-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 7px 16px;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  .toc-item:hover { background: #1e1e1e; }
+
+  .toc-item.active {
+    background: #1e1e1e;
+    border-left-color: #f59e0b;
+  }
+
+  .toc-item.active .toc-num { color: #f59e0b; }
+  .toc-item.active .toc-text { color: #f0f0f0; }
+
+  .toc-num {
+    font-size: 10px;
+    color: #444;
+    min-width: 18px;
+    font-weight: 600;
+    padding-top: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .toc-text {
+    font-size: 11.5px;
+    color: #666;
+    line-height: 1.4;
+    word-break: keep-all;
+  }
+
+  .toc-section {
+    padding: 10px 16px 4px;
+    font-size: 10px;
+    color: #f59e0b;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+
+  /* ── 메인 콘텐츠 ── */
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #111;
+  }
+
+  #slide-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 32px;
+    overflow: hidden;
+  }
+
+  .slide-card {
+    background: #fff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 860px;
+    height: 100%;
+    max-height: 520px;
+    display: none;
+    flex-direction: column;
+    padding: 40px 48px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    position: relative;
+  }
+
+  .slide-card.active { display: flex; }
+
+  /* 커버 슬라이드 */
+  .slide-cover {
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+    border: 1px solid #2a2a2a;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .slide-cover .cover-tag {
+    font-size: 11px;
+    color: #f59e0b;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .slide-cover h1 {
+    font-size: 32px;
+    color: #f0f0f0;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 16px;
+    word-break: keep-all;
+  }
+
+  .slide-cover .subtitle {
+    font-size: 16px;
+    color: #888;
+    line-height: 1.6;
+    max-width: 500px;
+    word-break: keep-all;
+  }
+
+  .slide-cover .accent-line {
+    width: 48px;
+    height: 3px;
+    background: #f59e0b;
+    margin: 20px auto;
+    border-radius: 2px;
+  }
+
+  /* 일반 슬라이드 */
+  .slide-card:not(.slide-cover):not(.slide-section-divider):not(.slide-closing) { background: #fff; color: #1a1a1a; }
+
+  .slide-section-badge {
+    display: inline-block;
+    font-size: 10px;
+    color: #f59e0b;
+    background: #fff8ed;
+    border: 1px solid #fcd34d;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    align-self: flex-start;
+  }
+
+  .slide-card h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 20px;
+    line-height: 1.3;
+    word-break: keep-all;
+  }
+
+  .slide-card h2 .accent { color: #d97706; }
+
+  .slide-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* 포인트 리스트 */
+  .point-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+  .point-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    word-break: keep-all;
+  }
+
+  .point-list li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #f59e0b;
+    border-radius: 50%;
+    margin-top: 8px;
+    flex-shrink: 0;
+  }
+
+  .point-list li strong { color: #111; font-weight: 700; }
+
+  /* 화살표 흐름 */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 8px 0;
+  }
+
+  .flow-item {
+    background: #f8f4ff;
+    border: 1px solid #ddd6fe;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #333;
+    font-weight: 600;
+  }
+
+  .flow-arrow { color: #f59e0b; font-size: 16px; font-weight: 700; }
+
+  /* 비교 테이블 */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .compare-card {
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .compare-card.before { background: #f5f5f5; border: 1px solid #e0e0e0; }
+  .compare-card.after { background: #fff8ed; border: 1px solid #fcd34d; }
+
+  .compare-card .label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #888;
+    margin-bottom: 4px;
+  }
+
+  .compare-card.after .label { color: #d97706; }
+
+  .compare-card p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #333;
+    word-break: keep-all;
+  }
+
+  /* 숫자 강조 */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    flex: 1;
+  }
+
+  .stat-item {
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-item .num {
+    font-size: 28px;
+    font-weight: 800;
+    color: #d97706;
+    line-height: 1;
+  }
+
+  .stat-item .desc {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.4;
+    word-break: keep-all;
+  }
+
+  /* 원칙 카드 */
+  .principle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .principle-item {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 14px;
+    border-left: 3px solid #f59e0b;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .principle-item .p-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: #f59e0b;
+    text-transform: uppercase;
+  }
+
+  .principle-item .p-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+  }
+
+  .principle-item .p-desc {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+
+  /* 섹션 구분 슬라이드 */
+  .slide-section-divider {
+    background: linear-gradient(135deg, #111 0%, #1c1c1c 100%);
+    border: 1px solid #2a2a2a;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .slide-section-divider .section-num {
+    font-size: 64px;
+    font-weight: 800;
+    color: #2a2a2a;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .slide-section-divider .section-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f0f0f0;
+    word-break: keep-all;
+    margin-bottom: 12px;
+  }
+
+  .slide-section-divider .section-desc {
+    font-size: 14px;
+    color: #666;
+    max-width: 460px;
+    line-height: 1.6;
+    word-break: keep-all;
+  }
+
+  .slide-section-divider .accent-bar {
+    width: 40px;
+    height: 3px;
+    background: #f59e0b;
+    margin: 16px auto;
+    border-radius: 2px;
+  }
+
+  /* 인용 블록 */
+  .quote-box {
+    background: #fffbf0;
+    border-left: 4px solid #f59e0b;
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin: 8px 0;
+  }
+
+  .quote-box p {
+    font-size: 15px;
+    color: #333;
+    line-height: 1.7;
+    font-style: italic;
+    word-break: keep-all;
+  }
+
+  .quote-box .source {
+    font-size: 12px;
+    color: #888;
+    margin-top: 8px;
+    font-style: normal;
+  }
+
+  /* 리스크 카드 */
+  .risk-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .risk-item {
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .risk-item .r-icon { font-size: 20px; }
+
+  .risk-item .r-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #b91c1c;
+  }
+
+  .risk-item .r-desc {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+
+  /* 전략 카드 */
+  .strategy-list { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+
+  .strategy-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+
+  .strategy-item .s-num {
+    font-size: 22px;
+    font-weight: 800;
+    color: #f59e0b;
+    line-height: 1;
+    min-width: 28px;
+  }
+
+  .strategy-item .s-content { flex: 1; }
+
+  .strategy-item .s-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 3px;
+  }
+
+  .strategy-item .s-desc {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+
+  /* 목차 슬라이드 */
+  .toc-slide-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .toc-slide-item {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toc-slide-item .t-num {
+    font-size: 20px;
+    font-weight: 800;
+    color: #f59e0b;
+    min-width: 28px;
+  }
+
+  .toc-slide-item .t-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #222;
+    word-break: keep-all;
+  }
+
+  /* 워크플로우 */
+  .workflow {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .workflow-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    padding: 10px 14px;
+    border-left: 3px solid #e5e5e5;
+  }
+
+  .workflow-step.highlight { border-left-color: #f59e0b; background: #fffbf0; }
+
+  .workflow-step .w-step {
+    font-size: 10px;
+    color: #aaa;
+    font-weight: 700;
+    min-width: 36px;
+    text-transform: uppercase;
+  }
+
+  .workflow-step.highlight .w-step { color: #f59e0b; }
+
+  .workflow-step .w-text {
+    font-size: 13px;
+    color: #333;
+    word-break: keep-all;
+  }
+
+  /* 클로징 슬라이드 */
+  .slide-closing {
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+    border: 1px solid #2a2a2a;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .slide-closing .closing-msg {
+    font-size: 18px;
+    color: #aaa;
+    line-height: 1.8;
+    max-width: 560px;
+    word-break: keep-all;
+    margin-bottom: 24px;
+  }
+
+  .slide-closing .closing-msg strong {
+    color: #f59e0b;
+    font-weight: 700;
+  }
+
+  .slide-closing .closing-footer {
+    font-size: 13px;
+    color: #444;
+    margin-top: 20px;
+  }
+
+  /* ── 네비게이션 바 ── */
+  #nav-bar {
+    height: 52px;
+    border-top: 1px solid #1e1e1e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 0 24px;
+    background: #0d0d0d;
+  }
+
+  .nav-btn {
+    background: #1e1e1e;
+    border: 1px solid #2a2a2a;
+    color: #aaa;
+    padding: 7px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+
+  .nav-btn:hover { background: #2a2a2a; color: #f0f0f0; }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+  #slide-counter {
+    font-size: 12px;
+    color: #444;
+    min-width: 72px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: #f59e0b;
+    transition: width 0.3s;
+    border-radius: 0 2px 2px 0;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- 좌측 사이드바 -->
+<div id="sidebar">
+  <div id="sidebar-header">
+    <div class="logo">Claude Code</div>
+    <div class="title">AI 에이전트와<br>바이브 코딩</div>
+  </div>
+  <div id="sidebar-label">목차</div>
+  <div id="toc"></div>
+</div>
+
+<!-- 메인 영역 -->
+<div id="main">
+  <div id="slide-area">
+
+    <!-- 1. 커버 -->
+    <div class="slide-card slide-cover active" data-section="cover">
+      <div class="cover-tag">2025 AI Strategy</div>
+      <h1>AI 에이전트와<br>바이브 코딩</h1>
+      <div class="accent-line"></div>
+      <div class="subtitle">비즈니스 패러다임의 전환과<br>리스크 관리 전략</div>
+    </div>
+
+    <!-- 2. 목차 -->
+    <div class="slide-card" data-section="cover">
+      <div class="slide-section-badge">Overview</div>
+      <h2>강의 전체 흐름</h2>
+      <div class="slide-body">
+        <div class="toc-slide-grid">
+          <div class="toc-slide-item"><div class="t-num">1</div><div class="t-label">바이브 코딩과 AI 에이전트란?</div></div>
+          <div class="toc-slide-item"><div class="t-num">2</div><div class="t-label">비즈니스 패러다임의 격변</div></div>
+          <div class="toc-slide-item"><div class="t-num">3</div><div class="t-label">도구 생태계와 전략</div></div>
+          <div class="toc-slide-item"><div class="t-num">4</div><div class="t-label">성공을 위한 4대 원칙</div></div>
+          <div class="toc-slide-item"><div class="t-num">5</div><div class="t-label">리스크 관리</div></div>
+          <div class="toc-slide-item"><div class="t-num">6</div><div class="t-label">결론과 미래 비전</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 1 -->
+    <div class="slide-card slide-section-divider" data-section="s1">
+      <div class="section-num">01</div>
+      <div class="section-title">바이브 코딩과<br>AI 에이전트란?</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">기술의 발전 축이 '언어의 숙련도'에서 '기획자의 의도'로 이동하고 있습니다</div>
+    </div>
+
+    <!-- 3. 기술의 근본적 전환점 -->
+    <div class="slide-card" data-section="s1">
+      <div class="slide-section-badge">1부</div>
+      <h2>기술의 <span class="accent">근본적 전환점</span></h2>
+      <div class="slide-body">
+        <div class="compare-grid">
+          <div class="compare-card before">
+            <div class="label">과거 (2020년 이전)</div>
+            <p>인간이 기계의 언어 <strong>(코드)</strong>를 배워야 했다</p>
+            <p style="margin-top:6px;font-size:12px;color:#999;">개발자만이 소프트웨어를 만들 수 있었던 시대<br>— 진입 장벽: 수천 시간의 학습</p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">현재 (2025년~)</div>
+            <p>기계가 인간의 <strong>'의도(Intent)'</strong>를 해석하는 시대</p>
+            <p style="margin-top:6px;font-size:12px;color:#999;">마케터·HR·재무 담당자도 소프트웨어 제작 가능</p>
+          </div>
+        </div>
+        <div class="stat-grid" style="margin-top:8px;grid-template-columns:1fr 1fr 1fr;">
+          <div class="stat-item">
+            <div class="num">77%</div>
+            <div class="desc">Fortune 500 기업의 GitHub Copilot 도입률 (2024)</div>
+          </div>
+          <div class="stat-item">
+            <div class="num">국내</div>
+            <div class="desc">삼성·카카오·네이버 전사 AI 코딩 도구 도입 추진 중</div>
+          </div>
+          <div class="stat-item">
+            <div class="num">지금</div>
+            <div class="desc">이미 시작된 변화 — 관망이 아닌 대응이 필요한 시점</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 바이브 코딩 -->
+    <div class="slide-card" data-section="s1">
+      <div class="slide-section-badge">1부</div>
+      <h2><span class="accent">바이브 코딩</span>이란?</h2>
+      <div class="slide-body">
+        <div class="quote-box">
+          <p>"코드라는 구체적 실체를 잊고, 오직 자연어로 결과물의 '느낌(Vibe)'과 비전만 전달"</p>
+          <div class="source">— Andrej Karpathy, 전 OpenAI 공동창립자 / Tesla AI 총괄</div>
+        </div>
+        <div class="compare-grid" style="margin-top:8px;">
+          <div class="compare-card before">
+            <div class="label">기존 방식 ✗</div>
+            <p style="font-size:12px;">"React 컴포넌트를 만들고 useState로 상태 관리해서 API 호출하고..."</p>
+            <p style="margin-top:4px;font-size:11px;color:#aaa;">→ 개발자에게만 가능한 언어</p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">바이브 코딩 ✓</div>
+            <p style="font-size:12px;">"직원들이 연차 신청하고 승인받는 HR 시스템 만들어줘. 모바일에서도 되면 좋겠어."</p>
+            <p style="margin-top:4px;font-size:11px;color:#aaa;">→ HR 담당자가 직접 제작 가능</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. AI 에이전트 -->
+    <div class="slide-card" data-section="s1">
+      <div class="slide-section-badge">1부</div>
+      <h2>AI 에이전트: <span class="accent">'실행하는 손'</span></h2>
+      <div class="slide-body">
+        <div class="compare-grid" style="margin-bottom:8px;">
+          <div class="compare-card before">
+            <div class="label">기존 AI (ChatGPT 초기)</div>
+            <p>질문에 답하는 <strong>지식 창고</strong></p>
+            <p style="margin-top:4px;font-size:11px;color:#aaa;">→ 사람이 결과를 직접 실행해야 함</p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">AI 에이전트 (2025~)</div>
+            <p>목표를 주면 <strong>스스로 계획·실행</strong></p>
+            <p style="margin-top:4px;font-size:11px;color:#aaa;">→ 중간 과정 전체를 AI가 처리</p>
+          </div>
+        </div>
+        <div class="workflow" style="padding:8px 0;">
+          <div class="workflow-step"><div class="w-step">예시</div><div class="w-text">마케터 지시: "이번 달 캠페인 성과를 정리해서 임원 보고용 초안 만들어줘"</div></div>
+          <div class="workflow-step"><div class="w-step">AI 실행</div><div class="w-text">데이터 수집 → 분석 → 차트 생성 → 보고서 초안 작성 → 이메일 발송</div></div>
+          <div class="workflow-step highlight"><div class="w-step">결과</div><div class="w-text">4시간짜리 작업이 <strong>15분</strong>으로 단축</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. 사회적 변곡점 -->
+    <div class="slide-card" data-section="s1">
+      <div class="slide-section-badge">1부</div>
+      <h2>사회적 <span class="accent">변곡점</span>의 지표</h2>
+      <div class="slide-body">
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="num">#1</div>
+            <div class="desc">'바이브 코딩' 검색량이 '코딩 학습' 추월 (Google Trends 2025)</div>
+          </div>
+          <div class="stat-item">
+            <div class="num">2025</div>
+            <div class="desc">Collins 사전 '올해의 단어' — Vibe Coding 선정</div>
+          </div>
+          <div class="stat-item">
+            <div class="num">5배</div>
+            <div class="desc">비개발자의 AI 코딩 도구 사용 증가율 (2023→2025, Gartner)</div>
+          </div>
+          <div class="stat-item">
+            <div class="num">↑</div>
+            <div class="desc">도메인 전문가 + AI 역량 결합 인재 채용 공고 급증 중</div>
+          </div>
+        </div>
+        <div class="quote-box" style="margin-top:8px;">
+          <p>기술 민주화는 단순 유행이 아닙니다.<br>이미 <strong>여러분의 경쟁자가 AI를 쓰고 있다</strong>는 의미이기도 합니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 2 -->
+    <div class="slide-card slide-section-divider" data-section="s2">
+      <div class="section-num">02</div>
+      <div class="section-title">비즈니스 패러다임의<br>격변</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">SaaS-pocalypse — 기존 소프트웨어 산업의 수익 모델과 고용 구조가 흔들리고 있습니다</div>
+    </div>
+
+    <!-- 7. 사스포칼립스 -->
+    <div class="slide-card" data-section="s2">
+      <div class="slide-section-badge">2부</div>
+      <h2><span class="accent">사스포칼립스</span> (SaaS-pocalypse)</h2>
+      <div class="slide-body">
+        <div class="quote-box">
+          <p>Anthropic 컴퓨터 직접 조작 기능 발표 하루 만에<br>법률·데이터 서비스 기업 시총 <strong>400조 원(2,850억$)</strong> 증발</p>
+        </div>
+        <div class="compare-grid" style="margin-top:8px;">
+          <div class="compare-card before">
+            <div class="label">기존: 기능별 구매</div>
+            <p style="font-size:12px;">문서 → Notion / 메일 → Outlook<br>CRM → Salesforce / 분석 → Tableau<br><em style="color:#aaa;">→ 기업당 평균 SaaS 130개 사용</em></p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">신질서: 단일 AI 구독</div>
+            <p style="font-size:12px;">"문서, 이메일, 고객 분석, 보고서 — <br>모두 AI 하나로 처리"<br><em style="color:#aaa;">→ 개별 SaaS 필요성 급감</em></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. 시장 전망 -->
+    <div class="slide-card" data-section="s2">
+      <div class="slide-section-badge">2부</div>
+      <h2>시장 전망과 <span class="accent">고용 충격</span></h2>
+      <div class="slide-body">
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="num">500억$</div>
+            <div class="desc">2030년 AI 에이전트 시장 (Goldman Sachs)<br><em style="font-size:10px;color:#aaa;">vs 전통 SaaS 180억$ — 완전 역전</em></div>
+          </div>
+          <div class="stat-item">
+            <div class="num">74.5%</div>
+            <div class="desc">컴퓨터 프로그래머 AI 대체 가능성</div>
+          </div>
+          <div class="stat-item">
+            <div class="num">70.1%</div>
+            <div class="desc">고객 서비스 담당자 AI 대체 가능성</div>
+          </div>
+          <div class="stat-item">
+            <div class="num">67.1%</div>
+            <div class="desc">데이터 분석 담당자 AI 대체 가능성</div>
+          </div>
+        </div>
+        <div class="quote-box" style="margin-top:8px;">
+          <p><strong>핵심 질문:</strong> AI에 대체되는 직무 vs AI를 활용해 생산성이 높아지는 직무<br>→ 차이는 단 하나, <strong>AI를 능동적으로 활용하느냐</strong>입니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. 매튜의 사례 -->
+    <div class="slide-card" data-section="s2">
+      <div class="slide-section-badge">2부</div>
+      <h2>Workflow AI의 탄생: <span class="accent">자동화의 실제</span></h2>
+      <div class="slide-body">
+        <div class="workflow">
+          <div class="workflow-step"><div class="w-step">사례</div><div class="w-text"><strong>보안 컨설턴트 Matthew (발리)</strong> — AI 에이전트 다단계 자동화</div></div>
+          <div class="workflow-step"><div class="w-step">자동화</div><div class="w-text">보안 테스트 → 결과 분석 → 보고서 작성 → 고객 이메일 발송</div></div>
+          <div class="workflow-step highlight"><div class="w-step">결과</div><div class="w-text"><strong>하루 30분 근무, 월 1억 5천만 원 매출</strong></div></div>
+        </div>
+        <div class="compare-grid" style="margin-top:8px;">
+          <div class="compare-card before">
+            <div class="label">우리 회사 적용 예시</div>
+            <p style="font-size:12px;">마케터: 광고 성과 → 주간 보고서 자동 생성<br>HR: 지원서 1차 분류 → 인터뷰 일정 자동화<br>영업: CRM 업데이트 → 팔로업 이메일 발송</p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">핵심 교훈</div>
+            <p style="font-size:12px;">전문직의 가치는 <strong>'실행'이 아닌</strong><br>AI를 설계·감독하는<br><strong>'기획력'</strong>에서 결정됩니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 3 -->
+    <div class="slide-card slide-section-divider" data-section="s3">
+      <div class="section-num">03</div>
+      <div class="section-title">도구 생태계와<br>전략</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">전략적 목적에 맞는 도구 선택이 비즈니스 효율성을 결정합니다</div>
+    </div>
+
+    <!-- 10. 도구 분류 -->
+    <div class="slide-card" data-section="s3">
+      <div class="slide-section-badge">3부</div>
+      <h2>AI 도구 <span class="accent">분류</span> & 직무별 추천</h2>
+      <div class="slide-body">
+        <div class="principle-grid">
+          <div class="principle-item">
+            <div class="p-num">에이전트 어시스턴트</div>
+            <div class="p-title">Claude.ai, ChatGPT</div>
+            <div class="p-desc">문서 작성·분석·요약·번역<br><em>→ HR·마케터·재무 모든 직무 추천</em></div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">AI 중심 에디터</div>
+            <div class="p-title">Cursor, GitHub Copilot</div>
+            <div class="p-desc">코드 작성·수정 자동화<br><em>→ 기술 담당자, IT 팀 추천</em></div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">풀스택 생성기</div>
+            <div class="p-title">Lovable, Google AI Studio</div>
+            <div class="p-desc">웹앱·내부 도구 빠른 제작<br><em>→ 비기술 담당자 추천 / Lovable: 1개월 만에 1억$ 매출</em></div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">CLI / 전문 에이전트</div>
+            <div class="p-title">Claude Code, Copilot CLI</div>
+            <div class="p-desc">복잡한 자동화 워크플로우<br><em>→ 숙련 전문가·개발자 효율 극대화</em></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11. 도메인 지식 -->
+    <div class="slide-card" data-section="s3">
+      <div class="slide-section-badge">3부</div>
+      <h2>도메인 지식 × AI = <span class="accent">당신의 무기</span></h2>
+      <div class="slide-body">
+        <div class="quote-box">
+          <p>최근 해커톤 수상자는 개발자가 아닌 <strong>변호사, 의사, 뮤지션</strong><br>→ AI가 코딩을 대신하니, 승부는 <strong>'어떤 문제를 얼마나 깊이 아느냐'</strong></p>
+        </div>
+        <div class="principle-grid" style="margin-top:8px;grid-template-columns:1fr 1fr;">
+          <div class="principle-item">
+            <div class="p-num">HR 담당자</div>
+            <div class="p-title">채용·평가 프로세스 자동화</div>
+            <div class="p-desc">지원서 분류부터 온보딩 체크리스트까지 개발자 없이 제작</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">마케터</div>
+            <div class="p-title">캠페인 분석·콘텐츠 자동화</div>
+            <div class="p-desc">성과 분석 대시보드, SNS 콘텐츠 캘린더 자동 생성</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">영업 담당자</div>
+            <div class="p-title">CRM 자동화·제안서 생성</div>
+            <div class="p-desc">고객 정보 기반 맞춤 제안서, 팔로업 이메일 자동화</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">재무 담당자</div>
+            <div class="p-title">보고서·예측 분석 자동화</div>
+            <div class="p-desc">월별 재무 보고서, 예산 시나리오 분석 자동 생성</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 4 -->
+    <div class="slide-card slide-section-divider" data-section="s4">
+      <div class="section-num">04</div>
+      <div class="section-title">성공을 위한<br>4대 원칙</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">비전공자가 AI로 고부가가치 결과물을 창출하기 위한 전략</div>
+    </div>
+
+    <!-- 12. 4대 원칙 -->
+    <div class="slide-card" data-section="s4">
+      <div class="slide-section-badge">4부</div>
+      <h2>4대 <span class="accent">실행 원칙</span></h2>
+      <div class="slide-body">
+        <div class="principle-grid">
+          <div class="principle-item">
+            <div class="p-num">원칙 01</div>
+            <div class="p-title">맥락적 프롬프팅</div>
+            <div class="p-desc">✗ "보고서 만들어줘"<br>✓ "20대 타겟, 카드뉴스 형식, 핵심 지표 3개 포함 마케팅 보고서 작성"</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">원칙 02</div>
+            <div class="p-title">시각적 논리</div>
+            <div class="p-desc">원하는 결과물과 유사한 레퍼런스 이미지 첨부<br>→ 텍스트 설명 대비 AI 오류 대폭 감소</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">원칙 03</div>
+            <div class="p-title">최신 문서 결합</div>
+            <div class="p-desc">공식 문서 / 사내 규정 / 양식 직접 붙여넣기<br>→ AI 학습 한계 극복, 할루시네이션 방지</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">원칙 04</div>
+            <div class="p-title">희망 상태(HFS) 전달</div>
+            <div class="p-desc">✗ "에러가 났어"<br>✓ "에러 내용 + 기대하는 최종 결과는 이것이야" → 정확한 해결</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 13. 상황 주도적 학습 -->
+    <div class="slide-card" data-section="s4">
+      <div class="slide-section-badge">4부</div>
+      <h2>전략적 학습: <span class="accent">'상황 주도적 학습'</span></h2>
+      <div class="slide-body">
+        <div class="compare-grid" style="margin-bottom:10px;">
+          <div class="compare-card before">
+            <div class="label">기존 방식 ✗</div>
+            <p>기초부터 완벽 학습 → 실행<br><em style="font-size:11px;color:#aaa;">"준비가 되면 시작하겠다"<br>→ 영원히 시작 못함</em></p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">AI 시대 방식 ✓</div>
+            <p><strong>"먼저 만들고, 문제가 생기면 그때 배운다"</strong></p>
+          </div>
+        </div>
+        <div class="flow">
+          <div class="flow-item">1주차<br>첫 작업 시도</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-item">2주차<br>문제 해결</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-item">3주차<br>응용 확장</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-item">4주차<br>업무 자동화</div>
+        </div>
+        <div class="quote-box" style="margin-top:8px;">
+          <p><strong>이번 주 목표:</strong> 지금 하고 있는 반복 업무 1가지를 AI로 해보기<br><em style="font-size:11px;color:#aaa;">완벽하지 않아도 됩니다. 시작이 전부입니다.</em></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 5 -->
+    <div class="slide-card slide-section-divider" data-section="s5">
+      <div class="section-num">05</div>
+      <div class="section-title">리스크 관리</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">전략적 거버넌스 없는 도입은 기업에 치명적인 위협이 될 수 있습니다</div>
+    </div>
+
+    <!-- 14. 기술적 부채 -->
+    <div class="slide-card" data-section="s5">
+      <div class="slide-section-badge">5부</div>
+      <h2><span class="accent">기술적 부채</span>와 보안 취약점</h2>
+      <div class="slide-body">
+        <div class="risk-grid">
+          <div class="risk-item">
+            <div class="r-icon"></div>
+            <div class="r-title">'의자' 메타포</div>
+            <div class="r-desc">AI 코드는 겉으론 멀쩡해 보이지만 내부 구조 취약<br>→ <strong>개발자 29%만</strong> AI 코드를 신뢰 (Stack Overflow 2024)</div>
+          </div>
+          <div class="risk-item">
+            <div class="r-icon"></div>
+            <div class="r-title">프롬프트 인젝션 공격</div>
+            <div class="r-desc">외부 데이터 오염 → AI가 사용자 설정 무시<br>→ 예산 한도 무시 과결제 실험 <strong>55% 발생</strong></div>
+          </div>
+          <div class="risk-item">
+            <div class="r-icon"></div>
+            <div class="r-title">안전 사용 체크리스트</div>
+            <div class="r-desc">□ 결과물 반드시 사람이 검토<br>□ 금액·날짜·수치 직접 확인<br>□ 중요 데이터 AI에 직접 입력 금지</div>
+          </div>
+          <div class="risk-item">
+            <div class="r-icon"></div>
+            <div class="r-title">사내 AI 활용 원칙</div>
+            <div class="r-desc">□ 개인정보·기밀 정보 입력 금지<br>□ AI 결과 = 초안 (최종 판단은 사람이)<br>□ 중요 의사결정 AI 단독 불가</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 15. 자율성의 역설 -->
+    <div class="slide-card" data-section="s5">
+      <div class="slide-section-badge">5부</div>
+      <h2>자율성의 역설과 <span class="accent">인적 리스크</span></h2>
+      <div class="slide-body">
+        <div class="risk-grid">
+          <div class="risk-item">
+            <div class="r-icon"></div>
+            <div class="r-title">통제 이탈 리스크</div>
+            <div class="r-desc">Anthropic 실험: 시스템 교체 시 AI가 협박 등 생존 본능 보일 확률 <strong>86%</strong><br>→ AI에게 과도한 권한·자율성 부여 위험</div>
+          </div>
+          <div class="risk-item">
+            <div class="r-icon"></div>
+            <div class="r-title">주체성의 상실</div>
+            <div class="r-desc">AI의 무분별한 피드백 → 비판적 판단력 마비<br>→ "AI가 그랬어요"는 면책이 되지 않습니다</div>
+          </div>
+        </div>
+        <div class="strategy-list" style="margin-top:10px;">
+          <div class="strategy-item">
+            <div class="s-num">1</div>
+            <div class="s-content">
+              <div class="s-title">AI는 도구, 인간이 결정권자</div>
+              <div class="s-desc">중요한 결과물의 최종 검토와 책임은 반드시 사람에게 있습니다</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">2</div>
+            <div class="s-content">
+              <div class="s-title">비판적 수용</div>
+              <div class="s-desc">AI 제안을 그대로 수용하지 말고, 항상 내 관점에서 검토 후 채택하세요</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 섹션 6 -->
+    <div class="slide-card slide-section-divider" data-section="s6">
+      <div class="section-num">06</div>
+      <div class="section-title">결론과<br>미래 비전</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">기술이 고도화될수록 역설적으로 가치가 상승하는 것: 인간의 '주체성'과 '철학적 사유'</div>
+    </div>
+
+    <!-- 16. 3대 전략 -->
+    <div class="slide-card" data-section="s6">
+      <div class="slide-section-badge">6부</div>
+      <h2>3대 <span class="accent">핵심 전략</span></h2>
+      <div class="slide-body">
+        <div class="strategy-list">
+          <div class="strategy-item">
+            <div class="s-num">1</div>
+            <div class="s-content">
+              <div class="s-title">의도 중심 비즈니스로의 전환</div>
+              <div class="s-desc">코딩·실행은 AI에게, 인간은 <strong>'왜'와 '무엇을'</strong>에 집중<br><em style="font-size:11px;color:#aaa;">→ 지금 당장: 내 업무에서 반복되는 실행 업무 3가지를 리스트업하세요</em></div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">2</div>
+            <div class="s-content">
+              <div class="s-title">상황 주도적 실행력 확보</div>
+              <div class="s-desc">완벽한 준비보다 <strong>빠른 시작과 반복</strong>이 핵심<br><em style="font-size:11px;color:#aaa;">→ 이번 주: 반복 업무 하나를 AI로 시도해보세요</em></div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">3</div>
+            <div class="s-content">
+              <div class="s-title">인간 중심의 통제 거버넌스</div>
+              <div class="s-desc">최종 결정권 유지 + AI 사용 가이드라인 팀 내 공유<br><em style="font-size:11px;color:#aaa;">→ 이번 달: 팀 내 AI 활용 사례를 공유하는 자리를 만드세요</em></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 17. 최종 제언 -->
+    <div class="slide-card slide-closing" data-section="s6">
+      <div class="cover-tag">Final Message</div>
+      <div class="closing-msg">
+        미래의 경쟁력은 기술 그 자체가 아니라<br>
+        <strong>기술을 사용하는 사람의 의지</strong>에 달려 있습니다.<br><br>
+        당신의 경험, 관점, 철학은<br>
+        <strong>AI 시대에 유일하게 감가상각되지 않는 자산</strong>입니다.
+      </div>
+      <div class="accent-line" style="width:48px;height:3px;background:#f59e0b;margin:16px auto 10px;border-radius:2px;"></div>
+      <div style="font-size:13px;color:#aaa;margin-bottom:10px;"><strong style="color:#f59e0b;">오늘 퇴근 전, 딱 하나만 해보세요:</strong><br>지금 가장 귀찮은 반복 업무를 Claude.ai에 입력해보기</div>
+      <div class="closing-footer">AI 에이전트와 바이브 코딩 — 비즈니스 패러다임의 전환과 리스크 관리 전략</div>
+    </div>
+
+  </div><!-- /slide-area -->
+
+  <!-- 네비게이션 -->
+  <div id="nav-bar">
+    <button class="nav-btn" id="btn-prev">← 이전</button>
+    <span id="slide-counter">1 / 23</span>
+    <button class="nav-btn" id="btn-next">다음 →</button>
+  </div>
+
+  <div id="progress-bar"></div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide-card');
+const total = slides.length;
+let current = 0;
+
+// TOC 데이터
+const tocData = [
+  { label: '표지', section: 'cover' },
+  { label: '강의 전체 흐름', section: 'cover' },
+  { label: '1부: 기술의 전환점', section: 's1', isSection: true },
+  { label: '기술의 근본적 전환점', section: 's1' },
+  { label: '바이브 코딩이란?', section: 's1' },
+  { label: 'AI 에이전트란?', section: 's1' },
+  { label: '사회적 변곡점 지표', section: 's1' },
+  { label: '2부: 비즈니스 격변', section: 's2', isSection: true },
+  { label: '사스포칼립스', section: 's2' },
+  { label: '시장 전망과 고용 충격', section: 's2' },
+  { label: 'Workflow AI 사례', section: 's2' },
+  { label: '3부: 도구 생태계', section: 's3', isSection: true },
+  { label: 'AI 코딩 도구 분류', section: 's3' },
+  { label: '도메인 지식 × AI', section: 's3' },
+  { label: '4부: 4대 원칙', section: 's4', isSection: true },
+  { label: '4대 실행 원칙', section: 's4' },
+  { label: '상황 주도적 학습', section: 's4' },
+  { label: '5부: 리스크 관리', section: 's5', isSection: true },
+  { label: '기술적 부채와 보안', section: 's5' },
+  { label: '자율성의 역설', section: 's5' },
+  { label: '6부: 결론', section: 's6', isSection: true },
+  { label: '3대 핵심 전략', section: 's6' },
+  { label: '최종 제언', section: 's6' },
+];
+
+const toc = document.getElementById('toc');
+const tocItems = [];
+
+// 슬라이드 인덱스와 TOC 매핑 (섹션 구분자 슬라이드 포함)
+let slideIdx = 0;
+tocData.forEach((item, i) => {
+  const el = document.createElement('div');
+  if (item.isSection) {
+    el.className = 'toc-section';
+    el.textContent = item.label;
+    toc.appendChild(el);
+    tocItems.push({ el: null, slideIndex: slideIdx });
+    slideIdx++;
+  } else {
+    el.className = 'toc-item';
+    el.innerHTML = `<span class="toc-num">${String(tocItems.filter(t => t.el).length + 1).padStart(2,'0')}</span><span class="toc-text">${item.label}</span>`;
+    el.addEventListener('click', () => goTo(tocItems.filter(t => t.el).length - 1 + (tocItems.filter(t => t.el).findIndex((t2,idx) => {
+      // just use closure index
+      return false;
+    })) ));
+    toc.appendChild(el);
+    tocItems.push({ el, slideIndex: slideIdx });
+    slideIdx++;
+  }
+});
+
+// 더 간단한 TOC 구현
+toc.innerHTML = '';
+const simpleToc = [
+  { num: '01', text: '표지', slide: 0 },
+  { num: '02', text: '강의 흐름 목차', slide: 1 },
+  { divider: '1부: 기술의 전환점' },
+  { num: '03', text: '기술의 근본적 전환점', slide: 3 },
+  { num: '04', text: '바이브 코딩이란?', slide: 4 },
+  { num: '05', text: 'AI 에이전트란?', slide: 5 },
+  { num: '06', text: '사회적 변곡점 지표', slide: 6 },
+  { divider: '2부: 비즈니스 격변' },
+  { num: '07', text: '사스포칼립스', slide: 8 },
+  { num: '08', text: '시장 전망과 고용 충격', slide: 9 },
+  { num: '09', text: 'Workflow AI 사례', slide: 10 },
+  { divider: '3부: 도구 생태계' },
+  { num: '10', text: 'AI 코딩 도구 분류', slide: 12 },
+  { num: '11', text: '도메인 지식 × AI', slide: 13 },
+  { divider: '4부: 4대 원칙' },
+  { num: '12', text: '4대 실행 원칙', slide: 15 },
+  { num: '13', text: '상황 주도적 학습', slide: 16 },
+  { divider: '5부: 리스크 관리' },
+  { num: '14', text: '기술적 부채와 보안', slide: 18 },
+  { num: '15', text: '자율성의 역설', slide: 19 },
+  { divider: '6부: 결론' },
+  { num: '16', text: '3대 핵심 전략', slide: 21 },
+  { num: '17', text: '최종 제언', slide: 22 },
+];
+
+const tocEls = [];
+simpleToc.forEach(item => {
+  if (item.divider) {
+    const d = document.createElement('div');
+    d.className = 'toc-section';
+    d.textContent = item.divider;
+    toc.appendChild(d);
+  } else {
+    const el = document.createElement('div');
+    el.className = 'toc-item';
+    el.innerHTML = `<span class="toc-num">${item.num}</span><span class="toc-text">${item.text}</span>`;
+    el.addEventListener('click', () => goTo(item.slide));
+    toc.appendChild(el);
+    tocEls.push({ el, slide: item.slide });
+  }
+});
+
+function updateToc() {
+  tocEls.forEach(({ el, slide }) => {
+    el.classList.toggle('active', slide === current);
+  });
+  // 활성 항목 스크롤
+  const active = tocEls.find(t => t.slide === current);
+  if (active) {
+    active.el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+}
+
+function goTo(idx) {
+  if (idx < 0 || idx >= total) return;
+  slides[current].classList.remove('active');
+  current = idx;
+  slides[current].classList.add('active');
+  document.getElementById('slide-counter').textContent = `${current + 1} / ${total}`;
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === total - 1;
+  document.getElementById('progress-bar').style.width = `${((current + 1) / total) * 100}%`;
+  updateToc();
+  broadcastSlide(current);
+}
+
+document.getElementById('btn-prev').addEventListener('click', () => goTo(current - 1));
+document.getElementById('btn-next').addEventListener('click', () => goTo(current + 1));
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(current - 1);
+});
+
+// 강사 화면(parent)에서 postMessage로 슬라이드 제어
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 'cc_goto') goTo(parseInt(e.data.idx));
+});
+
+// ── 임베드 모드 (slides_speaker.html에서 iframe으로 삽입 시) ──
+if (new URLSearchParams(location.search).has('embed')) {
+  document.getElementById('sidebar').style.display = 'none';
+  document.getElementById('nav-bar').style.display = 'none';
+}
+
+// ── localStorage 동기화 ──
+function broadcastSlide(idx) {
+  try { localStorage.setItem('cc_pres_slide', idx); } catch(e) {}
+}
+window.addEventListener('storage', e => {
+  if (e.key === 'cc_pres_slide') goTo(parseInt(e.newValue));
+});
+
+goTo(0);
+</script>
+</body>
+</html>
