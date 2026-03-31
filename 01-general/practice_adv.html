@@ -1089,6 +1089,33 @@
       </div>
     </div>
 
+    <!-- 2부 실습: Supabase MCP 연결하기 -->
+    <div class="slide-card" data-section="s2">
+      <div class="slide-section-badge">2부 실습</div>
+      <h2>즉시 실습: Supabase MCP <span class="accent">연결 따라하기</span></h2>
+      <div class="slide-body">
+        <div class="code-block" style="margin-bottom:10px;">
+          <div class="code-label">.mcp.json — 아래 내용을 프로젝트 루트에 저장</div>
+          <code><span class="ky">{</span></code>
+          <code>&nbsp;&nbsp;<span class="ky">"mcpServers"</span><span class="ky">: {</span></code>
+          <code>&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"supabase"</span><span class="ky">: {</span></code>
+          <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"command"</span><span class="ky">:</span> <span class="st">"npx"</span><span class="ky">,</span></code>
+          <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"args"</span><span class="ky">: [</span><span class="st">"-y"</span><span class="ky">,</span> <span class="st">"@supabase/mcp-server-supabase@latest"</span><span class="ky">,</span></code>
+          <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"--supabase-url"</span><span class="ky">,</span> <span class="st">"YOUR_PROJECT_URL"</span><span class="ky">,</span></code>
+          <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="st">"--supabase-api-key"</span><span class="ky">,</span> <span class="st">"YOUR_ANON_KEY"</span><span class="ky">]</span></code>
+          <code>&nbsp;&nbsp;&nbsp;&nbsp;<span class="ky">}</span></code>
+          <code>&nbsp;&nbsp;<span class="ky">}</span></code>
+          <code><span class="ky">}</span></code>
+        </div>
+        <div class="workflow">
+          <div class="workflow-step"><div class="w-step">Step 1</div><div class="w-text">Supabase → Settings → API에서 Project URL + anon key 복사</div></div>
+          <div class="workflow-step"><div class="w-step">Step 2</div><div class="w-text">YOUR_PROJECT_URL, YOUR_ANON_KEY 교체 후 <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-family:monospace;">.mcp.json</code>으로 저장</div></div>
+          <div class="workflow-step highlight"><div class="w-step">Step 3</div><div class="w-text">Claude Code 재시작 → <strong>"테이블 목록 보여줘"</strong> 입력해보기</div></div>
+        </div>
+        <div class="warn-box" style="margin-top:8px;">⚠ API 키는 <code style="background:#fff3d4;padding:1px 5px;border-radius:3px;font-family:monospace;">.gitignore</code>에 추가하거나 환경변수로 분리하세요</div>
+      </div>
+    </div>
+
     <!-- ─── 섹션 3 ─── -->
     <div class="slide-card slide-section-divider" data-section="s3">
       <div class="section-num">03</div>
