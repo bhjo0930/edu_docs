@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>바이브 코딩 심화 실습</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+    background: #0d0d0d;
+    color: #e5e5e5;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── 좌측 사이드바 ── */
+  #sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: #141414;
+    border-right: 1px solid #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #sidebar-header {
+    padding: 20px 16px 12px;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  #sidebar-header .logo {
+    font-size: 13px;
+    color: #888;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  #sidebar-header .title {
+    font-size: 12px;
+    color: #f59e0b;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  #sidebar-label {
+    padding: 14px 16px 6px;
+    font-size: 11px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  #toc {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0 16px;
+  }
+
+  #toc::-webkit-scrollbar { width: 4px; }
+  #toc::-webkit-scrollbar-track { background: transparent; }
+  #toc::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+  .toc-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 7px 16px;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  .toc-item:hover { background: #1e1e1e; }
+
+  .toc-item.active {
+    background: #1e1e1e;
+    border-left-color: #f59e0b;
+  }
+
+  .toc-item.active .toc-num { color: #f59e0b; }
+  .toc-item.active .toc-text { color: #f0f0f0; }
+
+  .toc-num {
+    font-size: 10px;
+    color: #444;
+    min-width: 18px;
+    font-weight: 600;
+    padding-top: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .toc-text {
+    font-size: 11.5px;
+    color: #666;
+    line-height: 1.4;
+    word-break: keep-all;
+  }
+
+  .toc-section {
+    padding: 10px 16px 4px;
+    font-size: 10px;
+    color: #f59e0b;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+
+  /* ── 메인 콘텐츠 ── */
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #111;
+  }
+
+  #slide-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 32px;
+    overflow: hidden;
+  }
+
+  .slide-card {
+    background: #fff;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 860px;
+    height: 100%;
+    max-height: 520px;
+    display: none;
+    flex-direction: column;
+    padding: 40px 48px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    position: relative;
+  }
+
+  .slide-card.active { display: flex; }
+
+  /* 커버 */
+  .slide-cover {
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+    border: 1px solid #2a2a2a;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .slide-cover .cover-tag {
+    font-size: 11px;
+    color: #f59e0b;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .slide-cover h1 {
+    font-size: 32px;
+    color: #f0f0f0;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 16px;
+    word-break: keep-all;
+  }
+
+  .slide-cover .subtitle {
+    font-size: 16px;
+    color: #888;
+    line-height: 1.6;
+    max-width: 500px;
+    word-break: keep-all;
+  }
+
+  .slide-cover .accent-line {
+    width: 48px;
+    height: 3px;
+    background: #f59e0b;
+    margin: 20px auto;
+    border-radius: 2px;
+  }
+
+  /* 일반 슬라이드 */
+  .slide-card:not(.slide-cover):not(.slide-section-divider):not(.slide-closing) { background: #fff; color: #1a1a1a; }
+
+  .slide-section-badge {
+    display: inline-block;
+    font-size: 10px;
+    color: #f59e0b;
+    background: #fff8ed;
+    border: 1px solid #fcd34d;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    align-self: flex-start;
+  }
+
+  .slide-card h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 20px;
+    line-height: 1.3;
+    word-break: keep-all;
+  }
+
+  .slide-card h2 .accent { color: #d97706; }
+
+  .slide-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* 포인트 리스트 */
+  .point-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+  .point-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    word-break: keep-all;
+  }
+
+  .point-list li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #f59e0b;
+    border-radius: 50%;
+    margin-top: 8px;
+    flex-shrink: 0;
+  }
+
+  .point-list li strong { color: #111; font-weight: 700; }
+
+  /* 화살표 흐름 */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 8px 0;
+  }
+
+  .flow-item {
+    background: #f8f4ff;
+    border: 1px solid #ddd6fe;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #333;
+    font-weight: 600;
+  }
+
+  .flow-arrow { color: #f59e0b; font-size: 16px; font-weight: 700; }
+
+  /* 비교 테이블 */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .compare-card {
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .compare-card.before { background: #f5f5f5; border: 1px solid #e0e0e0; }
+  .compare-card.after { background: #fff8ed; border: 1px solid #fcd34d; }
+
+  .compare-card .label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #888;
+    margin-bottom: 4px;
+  }
+
+  .compare-card.after .label { color: #d97706; }
+
+  .compare-card p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #333;
+    word-break: keep-all;
+  }
+
+  /* 숫자 강조 */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    flex: 1;
+  }
+
+  .stat-item {
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-item .num {
+    font-size: 28px;
+    font-weight: 800;
+    color: #d97706;
+    line-height: 1;
+  }
+
+  .stat-item .desc {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.4;
+    word-break: keep-all;
+  }
+
+  /* 원칙 카드 */
+  .principle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .principle-item {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 14px;
+    border-left: 3px solid #f59e0b;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .principle-item .p-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: #f59e0b;
+    text-transform: uppercase;
+  }
+
+  .principle-item .p-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+  }
+
+  .principle-item .p-desc {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+
+  /* 섹션 구분 슬라이드 */
+  .slide-section-divider {
+    background: linear-gradient(135deg, #111 0%, #1c1c1c 100%);
+    border: 1px solid #2a2a2a;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .slide-section-divider .section-num {
+    font-size: 64px;
+    font-weight: 800;
+    color: #2a2a2a;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .slide-section-divider .section-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f0f0f0;
+    word-break: keep-all;
+    margin-bottom: 12px;
+  }
+
+  .slide-section-divider .section-desc {
+    font-size: 14px;
+    color: #666;
+    max-width: 460px;
+    line-height: 1.6;
+    word-break: keep-all;
+  }
+
+  .slide-section-divider .accent-bar {
+    width: 40px;
+    height: 3px;
+    background: #f59e0b;
+    margin: 16px auto;
+    border-radius: 2px;
+  }
+
+  /* 인용 블록 */
+  .quote-box {
+    background: #fffbf0;
+    border-left: 4px solid #f59e0b;
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin: 8px 0;
+  }
+
+  .quote-box p {
+    font-size: 15px;
+    color: #333;
+    line-height: 1.7;
+    font-style: italic;
+    word-break: keep-all;
+  }
+
+  .quote-box .source {
+    font-size: 12px;
+    color: #888;
+    margin-top: 8px;
+    font-style: normal;
+  }
+
+  /* 전략 카드 */
+  .strategy-list { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+
+  .strategy-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+
+  .strategy-item .s-num {
+    font-size: 22px;
+    font-weight: 800;
+    color: #f59e0b;
+    line-height: 1;
+    min-width: 28px;
+  }
+
+  .strategy-item .s-content { flex: 1; }
+
+  .strategy-item .s-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 3px;
+  }
+
+  .strategy-item .s-desc {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+
+  /* 목차 슬라이드 */
+  .toc-slide-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .toc-slide-item {
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toc-slide-item .t-num {
+    font-size: 20px;
+    font-weight: 800;
+    color: #f59e0b;
+    min-width: 28px;
+  }
+
+  .toc-slide-item .t-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #222;
+    word-break: keep-all;
+  }
+
+  /* 워크플로우 */
+  .workflow {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .workflow-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    padding: 10px 14px;
+    border-left: 3px solid #e5e5e5;
+  }
+
+  .workflow-step.highlight { border-left-color: #f59e0b; background: #fffbf0; }
+
+  .workflow-step .w-step {
+    font-size: 10px;
+    color: #aaa;
+    font-weight: 700;
+    min-width: 48px;
+    text-transform: uppercase;
+  }
+
+  .workflow-step.highlight .w-step { color: #f59e0b; }
+
+  .workflow-step .w-text {
+    font-size: 13px;
+    color: #333;
+    word-break: keep-all;
+  }
+
+  /* 클로징 */
+  .slide-closing {
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+    border: 1px solid #2a2a2a;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .slide-closing .closing-msg {
+    font-size: 18px;
+    color: #aaa;
+    line-height: 1.8;
+    max-width: 560px;
+    word-break: keep-all;
+    margin-bottom: 24px;
+  }
+
+  .slide-closing .closing-msg strong { color: #f59e0b; font-weight: 700; }
+
+  .slide-closing .closing-footer {
+    font-size: 13px;
+    color: #444;
+    margin-top: 20px;
+  }
+
+  /* ── 네비게이션 바 ── */
+  #nav-bar {
+    height: 52px;
+    border-top: 1px solid #1e1e1e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 0 24px;
+    background: #0d0d0d;
+  }
+
+  .nav-btn {
+    background: #1e1e1e;
+    border: 1px solid #2a2a2a;
+    color: #aaa;
+    padding: 7px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+
+  .nav-btn:hover { background: #2a2a2a; color: #f0f0f0; }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+  #slide-counter {
+    font-size: 12px;
+    color: #444;
+    min-width: 72px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: #f59e0b;
+    transition: width 0.3s;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* ── 추가 스타일 ── */
+
+  /* 코드 블록 */
+  .code-block {
+    background: #1e1e1e;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: #e5e5e5;
+    line-height: 1.7;
+    overflow: hidden;
+  }
+
+  .code-block .code-label {
+    font-size: 10px;
+    color: #f59e0b;
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .code-block code { display: block; color: #a5f3fc; }
+  .code-block .cm { color: #6b7280; }
+  .code-block .ky { color: #f59e0b; }
+  .code-block .st { color: #86efac; }
+
+  /* 경고 박스 */
+  .warn-box {
+    background: #fff5f5;
+    border-left: 4px solid #ef4444;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+  }
+
+  .warn-box p {
+    font-size: 13px;
+    color: #b91c1c;
+    line-height: 1.6;
+    word-break: keep-all;
+  }
+
+  /* 3열 그리드 */
+  .tri-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    flex: 1;
+  }
+
+  /* 에이전트 팀 다이어그램 */
+  .agent-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .agent-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .agent-box {
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    flex: 1;
+  }
+
+  .agent-box.orchestrator {
+    background: #fef3c7;
+    border: 2px solid #f59e0b;
+    color: #92400e;
+    font-size: 13px;
+  }
+
+  .agent-box.worker {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    color: #0c4a6e;
+  }
+
+  .agent-box.tool {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #14532d;
+    font-size: 11px;
+  }
+
+  .agent-arrow {
+    color: #f59e0b;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .agent-arrow.down {
+    text-align: center;
+    font-size: 20px;
+    color: #cbd5e1;
+  }
+
+  /* 발표 체크리스트 */
+  .checklist { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+
+  .check-item .check-box {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .check-item .check-text {
+    font-size: 13px;
+    color: #333;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+
+  .check-item .check-text strong { color: #111; }
+
+  /* MCP 연결 다이어그램 */
+  .mcp-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 0;
+  }
+
+  .mcp-box {
+    border-radius: 10px;
+    padding: 14px 18px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .mcp-box.ai { background: #fef3c7; border: 2px solid #f59e0b; color: #92400e; }
+  .mcp-box.protocol { background: #1e1e1e; color: #f59e0b; font-size: 11px; padding: 8px 12px; }
+  .mcp-box.tool { background: #f0f9ff; border: 1px solid #bae6fd; color: #0c4a6e; }
+
+  .mcp-arrow { color: #cbd5e1; font-size: 20px; }
+
+</style>
+</head>
+<body>
+
+<!-- 좌측 사이드바 -->
+<div id="sidebar">
+  <div id="sidebar-header">
+    <div class="logo">심화 실습</div>
+    <div class="title">바이브 코딩<br>심화 실습</div>
+  </div>
+  <div id="sidebar-label">목차</div>
+  <div id="toc"></div>
+</div>
+
+<!-- 메인 영역 -->
+<div id="main">
+  <div id="slide-area">
+
+    <!-- 0. 커버 -->
+    <div class="slide-card slide-cover active" data-section="cover">
+      <div class="cover-tag">Vibe Coding Advanced</div>
+      <h1>바이브 코딩<br>심화 실습</h1>
+      <div class="accent-line"></div>
+      <div class="subtitle">트랜드 · MCP · Skills · Agent Team<br>직접 만들고 발표하는 실전 과정</div>
+    </div>
+
+    <!-- 1. 목차 -->
+    <div class="slide-card" data-section="cover">
+      <div class="slide-section-badge">Overview</div>
+      <h2>심화 실습 전체 흐름</h2>
+      <div class="slide-body">
+        <div class="toc-slide-grid">
+          <div class="toc-slide-item"><div class="t-num">1</div><div class="t-label">바이브 코딩 트랜드<br><em style="font-size:11px;color:#aaa;">컨텍스트 관리 · Context Rot<br>OpenClaw · Harness</em></div></div>
+          <div class="toc-slide-item"><div class="t-num">2</div><div class="t-label">MCP<br><em style="font-size:11px;color:#aaa;">프로토콜 개요<br>Stitch · Supabase</em></div></div>
+          <div class="toc-slide-item"><div class="t-num">3</div><div class="t-label">Skills<br><em style="font-size:11px;color:#aaa;">구조 · 작성 · 적용</em></div></div>
+          <div class="toc-slide-item"><div class="t-num">4</div><div class="t-label">Agent Team<br><em style="font-size:11px;color:#aaa;">오케스트레이션 패턴</em></div></div>
+          <div class="toc-slide-item" style="grid-column:1/-1;"><div class="t-num">5</div><div class="t-label">서비스 만들기 & 발표<br><em style="font-size:11px;color:#aaa;">기획 · 구현 · 발표 기준</em></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 섹션 1 ─── -->
+    <div class="slide-card slide-section-divider" data-section="s1">
+      <div class="section-num">01</div>
+      <div class="section-title">바이브 코딩<br>트랜드</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">컨텍스트 관리부터 자동화 프레임워크까지 — 2025년 최신 실전 흐름</div>
+    </div>
+
+    <!-- 2. 컨텍스트 관리 -->
+    <div class="slide-card" data-section="s1">
+      <div class="slide-section-badge">1부</div>
+      <h2><span class="accent">컨텍스트 관리</span> 전략</h2>
+      <div class="slide-body">
+        <div class="compare-grid" style="margin-bottom:8px;">
+          <div class="compare-card before">
+            <div class="label">컨텍스트란?</div>
+            <p style="font-size:12px;">AI가 한 세션에서 기억할 수 있는 전체 대화·코드·문서의 양<br><br>Claude: ~200K 토큰 ≈ 약 150,000단어<br><em style="color:#aaa;">→ 방대하지만 무한하지 않다</em></p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">핵심 관리 원칙</div>
+            <p style="font-size:12px;"><strong>CLAUDE.md</strong>에 프로젝트 규칙·배경 상시 기술<br><strong>/clear</strong>로 불필요한 컨텍스트 주기적 정리<br><strong>compact summary</strong>로 핵심만 압축 요약</p>
+          </div>
+        </div>
+        <div class="workflow">
+          <div class="workflow-step"><div class="w-step">Best</div><div class="w-text">CLAUDE.md에 프로젝트 목적·기술스택·금지사항 명시 → 매 세션 자동 로드</div></div>
+          <div class="workflow-step"><div class="w-step">Tip</div><div class="w-text">긴 작업 전 <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-family:monospace;">/clear</code> 실행 → 이전 실수·노이즈 제거 후 새 시작</div></div>
+          <div class="workflow-step highlight"><div class="w-step">핵심</div><div class="w-text"><strong>컨텍스트 품질</strong>이 결과 품질을 결정 — 많이 넣는 것보다 <strong>정확하게</strong> 넣는 것이 중요</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Context Rot -->
+    <div class="slide-card" data-section="s1">
+      <div class="slide-section-badge">1부</div>
+      <h2><span class="accent">Context Rot</span> — 컨텍스트 부패</h2>
+      <div class="slide-body">
+        <div class="quote-box" style="margin-bottom:10px;">
+          <p>대화가 길어질수록 AI의 추론 품질이 점진적으로 저하되는 현상<br>— 초반의 날카로운 답변이 후반에 무뎌지고 반복·오류가 증가</p>
+        </div>
+        <div class="principle-grid">
+          <div class="principle-item">
+            <div class="p-num">증상</div>
+            <div class="p-title">Context Rot 신호</div>
+            <div class="p-desc">• 앞서 정한 규칙을 갑자기 어김<br>• 같은 실수가 반복됨<br>• 답변이 점점 일반적으로 변함<br>• 이전 파일과 일관성 깨짐</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">원인</div>
+            <div class="p-title">왜 발생하는가?</div>
+            <div class="p-desc">토큰 한계 접근 시 초기 지시 희석<br>오류 메시지·반복 수정으로 노이즈 증가<br>모델이 최근 대화에 더 가중치를 둠</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">대응 1</div>
+            <div class="p-title">세션 리셋 & 요약</div>
+            <div class="p-desc"><code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-family:monospace;">/clear</code> 후 핵심 진행 상황만 붙여넣기<br>"지금까지 완성된 것: ..., 다음 할 것: ..."</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">대응 2</div>
+            <div class="p-title">작업 단위 분리</div>
+            <div class="p-desc">큰 작업을 독립적 서브태스크로 분리<br>각 태스크를 새 세션에서 처리<br>→ 각 세션의 컨텍스트를 항상 신선하게 유지</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. OpenClaw -->
+    <div class="slide-card" data-section="s1">
+      <div class="slide-section-badge">1부</div>
+      <h2><span class="accent">OpenClaw</span> — 개인용 AI 에이전트</h2>
+      <div class="slide-body">
+        <div class="compare-grid" style="margin-bottom:10px;">
+          <div class="compare-card before" style="border-left:3px solid #f59e0b;">
+            <div class="label" style="color:#d97706;">핵심 특징</div>
+            <p style="font-size:12px;">• 내 컴퓨터에서 직접 실행 — 데이터 외부 유출 없음<br>• <strong>WhatsApp·Telegram·Slack·Discord</strong> 등 채팅앱에서 조작<br>• macOS·Windows·Linux 모두 지원<br>• 오픈소스 (MIT 라이선스) — 직접 수정 가능</p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">자동화 가능한 업무</div>
+            <p style="font-size:12px;">• 이메일 발송·정리<br>• 캘린더 일정 관리<br>• 파일 읽기·쓰기·검색<br>• 셸 명령 실행<br>• 항공편 체크인·예약 등 웹 자동화</p>
+          </div>
+        </div>
+        <div class="workflow">
+          <div class="workflow-step"><div class="w-step">지속 학습</div><div class="w-text">영구 메모리로 사용자 선호도·패턴을 학습 → 쓸수록 더 똑똑해짐</div></div>
+          <div class="workflow-step highlight"><div class="w-step">활용 팁</div><div class="w-text">Slack에서 <strong>"오늘 받은 메일 요약해줘"</strong> → 백그라운드에서 처리 후 결과 전송<br><em style="font-size:11px;color:#aaa;">openclaw.ai · 커뮤니티 스킬·플러그인으로 기능 확장 가능</em></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Harness -->
+    <div class="slide-card" data-section="s1">
+      <div class="slide-section-badge">1부</div>
+      <h2><span class="accent">Harness</span> — AI-Native DevOps</h2>
+      <div class="slide-body">
+        <div class="quote-box" style="margin-bottom:10px;">
+          <p>"AI for Everything After Code" — 코드를 작성한 이후의 모든 과정(빌드·테스트·배포·보안·비용)을 AI로 자동화</p>
+          <div class="source">harness.io · VMware·Citi·United Airlines 등 사용 중</div>
+        </div>
+        <div class="principle-grid">
+          <div class="principle-item">
+            <div class="p-num">CI/CD 자동화</div>
+            <div class="p-title">Continuous Delivery & GitOps</div>
+            <div class="p-desc">AI가 파이프라인을 분석해 병목 제거·배포 최적화. 실패 시 자동 롤백.</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">AI 테스트</div>
+            <div class="p-title">자가 치유 테스트</div>
+            <div class="p-desc">UI 변경 시 테스트 코드를 AI가 자동 수정. 테스트 유지 비용 대폭 감소.</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">보안</div>
+            <div class="p-title">AI 위협 탐지</div>
+            <div class="p-desc">코드·API·AI 시스템의 보안 취약점을 배포 전 자동 검사·차단.</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">바이브 코딩 연결점</div>
+            <div class="p-title">AI가 만든 코드를 안전하게 배포</div>
+            <div class="p-desc">Lovable·Claude Code 등으로 만든 코드를 Harness로 검증·배포 — 바이브 코딩의 마지막 단계</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Paperclip -->
+    <div class="slide-card" data-section="s1">
+      <div class="slide-section-badge">1부</div>
+      <h2><span class="accent">Paperclip</span> — AI 에이전트 회사</h2>
+      <div class="slide-body">
+        <div class="compare-grid" style="margin-bottom:10px;">
+          <div class="compare-card before" style="border-left:3px solid #f59e0b;">
+            <div class="label" style="color:#d97706;">핵심 비유</div>
+            <p style="font-size:13px;font-weight:700;margin-bottom:6px;">OpenClaw이 직원이라면,<br>Paperclip은 회사다</p>
+            <p style="font-size:12px;">여러 AI 에이전트(OpenClaw·Claude Code·Codex 등)를 <strong>조직도·목표·예산·역할</strong>로 관리하는 오케스트레이션 플랫폼</p>
+            <p style="margin-top:6px;font-size:11px;color:#aaa;">오픈소스 · paperclip.inc · GitHub 14.2K stars</p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">주요 기능</div>
+            <p style="font-size:12px;">• <strong>조직도·보고 라인</strong> 설정 — 에이전트가 "무엇을, 왜" 알고 실행<br>• <strong>에이전트별 월간 예산</strong> — 한도 도달 시 자동 중단<br>• <strong>Heartbeat 스케줄</strong> — 정기적 자동 작업 실행<br>• 모든 작업 감사 로그 · 모바일 관리</p>
+          </div>
+        </div>
+        <div class="workflow">
+          <div class="workflow-step highlight"><div class="w-step">시작</div><div class="w-text"><code style="background:#fffbf0;padding:1px 6px;border-radius:3px;font-family:monospace;">npx paperclipai onboard --yes</code> → 에이전트 팀 구성 시작</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 섹션 2 ─── -->
+    <div class="slide-card slide-section-divider" data-section="s2">
+      <div class="section-num">02</div>
+      <div class="section-title">MCP<br>Model Context Protocol</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">AI가 외부 세계와 연결되는 표준 인터페이스 — Stitch · Supabase</div>
+    </div>
+
+    <!-- 5. MCP 개요 -->
+    <div class="slide-card" data-section="s2">
+      <div class="slide-section-badge">2부</div>
+      <h2>MCP란? <span class="accent">AI의 USB 포트</span></h2>
+      <div class="slide-body">
+        <div class="mcp-diagram">
+          <div class="mcp-box ai">Claude<br><span style="font-size:11px;font-weight:400;">AI 모델</span></div>
+          <div class="mcp-arrow">⟶</div>
+          <div class="mcp-box protocol">MCP<br>표준 인터페이스</div>
+          <div class="mcp-arrow">⟶</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div class="mcp-box tool" style="padding:8px 12px;font-size:12px;">파일 시스템</div>
+            <div class="mcp-box tool" style="padding:8px 12px;font-size:12px;">Supabase DB</div>
+            <div class="mcp-box tool" style="padding:8px 12px;font-size:12px;">GitHub / Slack</div>
+            <div class="mcp-box tool" style="padding:8px 12px;font-size:12px;">외부 API</div>
+          </div>
+        </div>
+        <div class="compare-grid" style="margin-top:8px;">
+          <div class="compare-card before">
+            <div class="label">MCP 없이 (이전)</div>
+            <p style="font-size:12px;">AI에게 데이터를 직접 복사해서 붙여넣어야 함<br>→ 수동 작업, 최신 데이터 반영 불가</p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">MCP 사용 시</div>
+            <p style="font-size:12px;">AI가 실시간으로 DB 조회·수정, 파일 읽기, 슬랙 메시지 전송 등을 <strong>자율적으로 처리</strong></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Stitch MCP -->
+    <div class="slide-card" data-section="s2">
+      <div class="slide-section-badge">2부</div>
+      <h2><span class="accent">Stitch</span> — MCP 연결 허브</h2>
+      <div class="slide-body">
+        <div class="quote-box" style="margin-bottom:10px;">
+          <p>여러 MCP 서버를 <strong>하나의 인터페이스</strong>로 통합 관리하는 플랫폼<br>— 개별 MCP 서버를 일일이 설정하지 않고 Stitch 하나로 연결</p>
+        </div>
+        <div class="principle-grid">
+          <div class="principle-item">
+            <div class="p-num">주요 기능</div>
+            <div class="p-title">MCP 서버 통합 관리</div>
+            <div class="p-desc">GitHub, Notion, Slack, DB 등 다양한 MCP 서버를 한 곳에서 연결·관리</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">장점</div>
+            <div class="p-title">설정 단순화</div>
+            <div class="p-desc">각 도구별 MCP 설정 없이 Stitch 계정 연결만으로 수십 개의 통합 사용 가능</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">실습 시나리오</div>
+            <div class="p-title">GitHub + Notion 연동</div>
+            <div class="p-desc">"오늘 머지된 PR을 정리해서 Notion 업무 일지에 자동 기록해줘"</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">설정 위치</div>
+            <div class="p-title">.mcp.json 파일</div>
+            <div class="p-desc">프로젝트 루트의 .mcp.json에 Stitch 서버 URL 등록 → Claude Code가 자동 인식</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Supabase MCP -->
+    <div class="slide-card" data-section="s2">
+      <div class="slide-section-badge">2부</div>
+      <h2><span class="accent">Supabase MCP</span> — AI가 DB를 직접 다룬다</h2>
+      <div class="slide-body">
+        <div class="workflow" style="margin-bottom:10px;">
+          <div class="workflow-step"><div class="w-step">설정</div><div class="w-text">.mcp.json에 Supabase MCP 서버 등록 → Project URL + API 키 입력</div></div>
+          <div class="workflow-step"><div class="w-step">사용</div><div class="w-text">Claude Code에게 자연어로 DB 작업 지시 — 테이블 조회, 데이터 삽입, 스키마 수정</div></div>
+          <div class="workflow-step highlight"><div class="w-step">예시</div><div class="w-text"><strong>"users 테이블에서 이번 달 신규 가입자 수를 지역별로 집계해서 보여줘"</strong></div></div>
+        </div>
+        <div class="compare-grid">
+          <div class="compare-card before">
+            <div class="label">할 수 있는 것</div>
+            <p style="font-size:12px;">• 테이블 생성·수정·삭제<br>• SQL 쿼리 자동 생성·실행<br>• 데이터 분석 및 시각화 코드 생성<br>• Row Level Security 정책 설정</p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">주의 사항</div>
+            <p style="font-size:12px;">• 프로덕션 DB에 직접 연결 주의<br>• 삭제·수정 전 반드시 확인 요청<br>• <strong>개발/스테이징 환경 우선 사용</strong><br>• API 키 .gitignore 처리 필수</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 섹션 3 ─── -->
+    <div class="slide-card slide-section-divider" data-section="s3">
+      <div class="section-num">03</div>
+      <div class="section-title">Skills<br>재사용 가능한 AI 지식</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">반복 작업을 슬래시 명령어로 만드는 Claude Code Skills 시스템</div>
+    </div>
+
+    <!-- 8. Skills 개념 & 구조 -->
+    <div class="slide-card" data-section="s3">
+      <div class="slide-section-badge">3부</div>
+      <h2>Skills란? <span class="accent">구조와 작동 방식</span></h2>
+      <div class="slide-body">
+        <div class="compare-grid" style="margin-bottom:10px;">
+          <div class="compare-card before">
+            <div class="label">Skills 없이</div>
+            <p style="font-size:12px;">매번 같은 맥락·지시를 처음부터 입력<br>"코드 리뷰할 때마다 동일한 기준 설명"<br>→ 시간 낭비, 일관성 부족</p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">Skills 사용 시</div>
+            <p style="font-size:12px;"><code style="background:#fff3d4;padding:1px 5px;border-radius:3px;font-family:monospace;">/code-review</code> 입력 한 번<br>→ 사전 정의된 기준으로 즉시 리뷰 시작<br>→ 팀 전체가 동일한 기준 공유</p>
+          </div>
+        </div>
+        <div class="code-block">
+          <div class="code-label">Skills 파일 구조 — .claude/commands/code-review.md</div>
+          <code><span class="ky">---</span></code>
+          <code><span class="ky">name:</span> <span class="st">code-review</span></code>
+          <code><span class="ky">description:</span> <span class="st">팀 코딩 컨벤션 기준으로 코드 리뷰</span></code>
+          <code><span class="ky">---</span></code>
+          <code><span class="cm"># 리뷰 기준</span></code>
+          <code><span class="st">1. 변수명이 의미를 명확히 전달하는가?</span></code>
+          <code><span class="st">2. 에러 처리가 적절한가?</span></code>
+          <code><span class="st">3. 불필요한 중복 코드는 없는가?</span></code>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. Skills 실습 -->
+    <div class="slide-card" data-section="s3">
+      <div class="slide-section-badge">3부</div>
+      <h2>Skills <span class="accent">실습 — 직접 만들기</span></h2>
+      <div class="slide-body">
+        <div class="strategy-list">
+          <div class="strategy-item">
+            <div class="s-num">1</div>
+            <div class="s-content">
+              <div class="s-title">폴더 생성</div>
+              <div class="s-desc">프로젝트 루트에 <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-family:monospace;">.claude/commands/</code> 폴더 생성</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">2</div>
+            <div class="s-content">
+              <div class="s-title">Skill 파일 작성</div>
+              <div class="s-desc"><code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-family:monospace;">my-skill.md</code> 생성 → frontmatter(name, description) + 지시 내용 작성</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">3</div>
+            <div class="s-content">
+              <div class="s-title">호출 & 테스트</div>
+              <div class="s-desc">Claude Code에서 <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-family:monospace;">/my-skill</code> 입력 → 동작 확인 → 개선 반복</div>
+            </div>
+          </div>
+        </div>
+        <div class="quote-box" style="margin-top:8px;">
+          <p><strong>실습 과제:</strong> 본인 업무에서 반복하는 작업 1가지를 Skill로 만들어보기<br><em style="font-size:11px;color:#aaa;">예: /weekly-report, /meeting-summary, /bug-report</em></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 섹션 4 ─── -->
+    <div class="slide-card slide-section-divider" data-section="s4">
+      <div class="section-num">04</div>
+      <div class="section-title">Agent Team<br>다중 에이전트 협업</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">하나의 AI가 아닌 전문화된 에이전트 팀이 함께 일하는 구조</div>
+    </div>
+
+    <!-- 10. Agent Team 개념 -->
+    <div class="slide-card" data-section="s4">
+      <div class="slide-section-badge">4부</div>
+      <h2>Agent Team이란? <span class="accent">왜 팀인가?</span></h2>
+      <div class="slide-body">
+        <div class="compare-grid" style="margin-bottom:8px;">
+          <div class="compare-card before">
+            <div class="label">단일 에이전트 한계</div>
+            <p style="font-size:12px;">복잡한 작업을 혼자 처리 → 컨텍스트 과부하<br>모든 도메인을 하나의 AI가 담당 → 전문성 희석<br>병렬 처리 불가 → 순차 실행으로 느림</p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">Agent Team 장점</div>
+            <p style="font-size:12px;"><strong>전문화:</strong> 각자의 역할·도구에 집중<br><strong>병렬:</strong> 독립 작업 동시 처리로 속도 향상<br><strong>검증:</strong> 에이전트 간 상호 검토로 품질 향상</p>
+          </div>
+        </div>
+        <div class="agent-diagram">
+          <div class="agent-row" style="justify-content:center;">
+            <div class="agent-box orchestrator" style="max-width:200px;">오케스트레이터<br><span style="font-size:11px;font-weight:400;">작업 분해 & 조율</span></div>
+          </div>
+          <div class="agent-row" style="justify-content:center;gap:16px;">
+            <div style="text-align:center;color:#cbd5e1;font-size:18px;">↙</div>
+            <div style="text-align:center;color:#cbd5e1;font-size:18px;">↓</div>
+            <div style="text-align:center;color:#cbd5e1;font-size:18px;">↘</div>
+          </div>
+          <div class="agent-row">
+            <div class="agent-box worker">리서치 에이전트<br><span style="font-size:11px;font-weight:400;">정보 수집·분석</span></div>
+            <div style="width:8px;"></div>
+            <div class="agent-box worker">코딩 에이전트<br><span style="font-size:11px;font-weight:400;">코드 작성·실행</span></div>
+            <div style="width:8px;"></div>
+            <div class="agent-box worker">QA 에이전트<br><span style="font-size:11px;font-weight:400;">검증·테스트</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11. 오케스트레이션 패턴 -->
+    <div class="slide-card" data-section="s4">
+      <div class="slide-section-badge">4부</div>
+      <h2>오케스트레이션 <span class="accent">3가지 패턴</span></h2>
+      <div class="slide-body">
+        <div class="principle-grid">
+          <div class="principle-item">
+            <div class="p-num">패턴 01 — Sequential</div>
+            <div class="p-title">순차 파이프라인</div>
+            <div class="p-desc">A → B → C 순서로 결과를 넘기며 처리<br>각 단계가 이전 단계 결과에 의존할 때<br><em style="font-size:11px;color:#aaa;">예: 수집 → 분석 → 보고서</em></div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">패턴 02 — Parallel</div>
+            <div class="p-title">병렬 처리</div>
+            <div class="p-desc">독립적인 작업을 동시에 여러 에이전트가 처리<br>속도 최대화, 단 결과 통합 로직 필요<br><em style="font-size:11px;color:#aaa;">예: 다국어 번역 동시 처리</em></div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">패턴 03 — Evaluator</div>
+            <div class="p-title">생성-평가 루프</div>
+            <div class="p-desc">Generator가 결과 생성 → Evaluator가 품질 검증 → 기준 미달 시 재생성<br><em style="font-size:11px;color:#aaa;">PDCA iterate 패턴의 핵심</em></div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">Claude Code 적용</div>
+            <div class="p-title">Subagent 활용</div>
+            <div class="p-desc"><code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-family:monospace;">Agent tool</code>로 서브에이전트 실행<br>각 서브에이전트에 특화된 CLAUDE.md 적용<br>메인 에이전트가 결과 취합·조율</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12. Agent Team 실습 -->
+    <div class="slide-card" data-section="s4">
+      <div class="slide-section-badge">4부</div>
+      <h2>Agent Team <span class="accent">실습 시나리오</span></h2>
+      <div class="slide-body">
+        <div class="workflow">
+          <div class="workflow-step"><div class="w-step">시나리오</div><div class="w-text"><strong>블로그 자동화 팀:</strong> 주제 입력 → 리서치 → 초안 작성 → SEO 최적화 → 발행</div></div>
+          <div class="workflow-step"><div class="w-step">Agent 1</div><div class="w-text">리서치 에이전트 — 웹 검색으로 최신 정보·통계 수집, 핵심 인사이트 3가지 추출</div></div>
+          <div class="workflow-step"><div class="w-step">Agent 2</div><div class="w-text">작성 에이전트 — 리서치 결과 기반 1,500자 블로그 초안 작성, 소제목 구조화</div></div>
+          <div class="workflow-step"><div class="w-step">Agent 3</div><div class="w-text">SEO 에이전트 — 키워드 밀도 분석, 메타 설명 작성, 제목 A/B 3안 제시</div></div>
+          <div class="workflow-step highlight"><div class="w-step">결과</div><div class="w-text">사람 개입 없이 발행 준비 완료 — <strong>3시간 작업이 5분으로</strong></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 섹션 5 ─── -->
+    <div class="slide-card slide-section-divider" data-section="s5">
+      <div class="section-num">05</div>
+      <div class="section-title">서비스 만들기<br>&amp; 발표</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">배운 것을 실제 서비스로 구현하고, 팀 앞에서 발표합니다</div>
+    </div>
+
+    <!-- 13. 서비스 기획 프레임워크 -->
+    <div class="slide-card" data-section="s5">
+      <div class="slide-section-badge">5부</div>
+      <h2>서비스 기획 <span class="accent">프레임워크</span></h2>
+      <div class="slide-body">
+        <div class="strategy-list">
+          <div class="strategy-item">
+            <div class="s-num">1</div>
+            <div class="s-content">
+              <div class="s-title">문제 정의 (Why)</div>
+              <div class="s-desc">어떤 반복 업무 / 불편함을 해결하는가? — <em>가능한 본인이 직접 겪은 문제</em></div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">2</div>
+            <div class="s-content">
+              <div class="s-title">솔루션 선택 (What + How)</div>
+              <div class="s-desc">사용할 도구 결정: Lovable / AI Studio / Claude Code + MCP<br>필요한 Skills / Agent 구조 설계</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">3</div>
+            <div class="s-content">
+              <div class="s-title">MVP 범위 확정</div>
+              <div class="s-desc">핵심 기능 1~2개만 — 완벽한 서비스가 아닌 <strong>'작동하는 데모'</strong>가 목표<br><em style="font-size:11px;color:#aaa;">시간 내 완성 가능한 범위로 조정</em></div>
+            </div>
+          </div>
+        </div>
+        <div class="quote-box" style="margin-top:8px;">
+          <p><strong>추천 주제:</strong> 지금 가장 귀찮은 업무 자동화 / 팀 내 공유 도구 / 나만의 정보 수집 에이전트</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14. 구현 가이드 -->
+    <div class="slide-card" data-section="s5">
+      <div class="slide-section-badge">5부</div>
+      <h2>구현 <span class="accent">가이드 & 체크리스트</span></h2>
+      <div class="slide-body">
+        <div class="compare-grid" style="margin-bottom:10px;">
+          <div class="compare-card before">
+            <div class="label">구현 순서</div>
+            <p style="font-size:12px;">1. CLAUDE.md에 프로젝트 목적·제약 정의<br>2. 핵심 기능 먼저 — 디자인은 나중<br>3. 작동 확인 → 기능 추가 → 작동 확인<br>4. Context Rot 발생 시 /clear 후 재시작</p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">막혔을 때</div>
+            <p style="font-size:12px;">에러 메시지 + <strong>"기대하는 결과는 이것"</strong>을 함께 전달<br>3번 이상 같은 에러 → 세션 초기화 후 새 접근<br>막히면 더 작은 단계로 쪼개기</p>
+          </div>
+        </div>
+        <div class="checklist">
+          <div class="check-item"><div class="check-box"></div><div class="check-text"><strong>핵심 기능이 실제로 동작하는가?</strong> (화면에서 확인 가능)</div></div>
+          <div class="check-item"><div class="check-box"></div><div class="check-text"><strong>어떤 도구/기법을 사용했는지</strong> 설명할 수 있는가?</div></div>
+          <div class="check-item"><div class="check-box"></div><div class="check-text"><strong>실제 업무에 적용 가능한가?</strong> 또는 적용 계획이 있는가?</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 15. 발표 기준 -->
+    <div class="slide-card" data-section="s5">
+      <div class="slide-section-badge">5부</div>
+      <h2>발표 <span class="accent">구성 & 평가 기준</span></h2>
+      <div class="slide-body">
+        <div class="principle-grid" style="margin-bottom:10px;">
+          <div class="principle-item">
+            <div class="p-num">발표 구성 (5분)</div>
+            <div class="p-title">① 문제 & 동기 (1분)</div>
+            <div class="p-desc">어떤 불편함을 해결했는가? 왜 이 주제를 골랐는가?</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">발표 구성 (5분)</div>
+            <div class="p-title">② 라이브 데모 (2분)</div>
+            <div class="p-desc">실제 작동하는 화면 직접 시연. 동작하지 않으면 과정 설명으로 대체 가능.</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">발표 구성 (5분)</div>
+            <div class="p-title">③ 기술 설명 (1분)</div>
+            <div class="p-desc">사용한 도구·Skills·MCP·Agent 구조 간략 설명</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">발표 구성 (5분)</div>
+            <div class="p-title">④ 배운 점 & 다음 계획 (1분)</div>
+            <div class="p-desc">만드는 과정에서 가장 어려웠던 것, 실무 적용 계획</div>
+          </div>
+        </div>
+        <div class="stat-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;">
+          <div class="stat-item"><div class="num" style="font-size:18px;">동작</div><div class="desc">핵심 기능이 실제로 작동하는가</div></div>
+          <div class="stat-item"><div class="num" style="font-size:18px;">도구</div><div class="desc">배운 도구를 적절히 활용했는가</div></div>
+          <div class="stat-item"><div class="num" style="font-size:18px;">실용</div><div class="desc">실제 문제를 해결하는가</div></div>
+          <div class="stat-item"><div class="num" style="font-size:18px;">공유</div><div class="desc">다른 팀원에게 인사이트를 주는가</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 16. 마무리 -->
+    <div class="slide-card slide-closing" data-section="s5">
+      <div class="cover-tag">Wrap-up</div>
+      <div class="closing-msg">
+        컨텍스트를 관리하고, 도구를 연결하고,<br>
+        에이전트 팀을 구성하는 것 — 이것이<br>
+        <strong>2025년 바이브 코딩의 실전입니다.</strong>
+      </div>
+      <div class="accent-line" style="width:48px;height:3px;background:#f59e0b;margin:16px auto 10px;border-radius:2px;"></div>
+      <div style="font-size:13px;color:#aaa;margin-bottom:10px;">
+        <strong style="color:#f59e0b;">오늘 가져갈 한 가지:</strong><br>
+        배운 도구 중 하나를 골라 이번 주 실무에서 실제로 써보기
+      </div>
+      <div class="closing-footer">바이브 코딩 심화 실습 — Context Rot · MCP · Skills · Agent Team · 서비스 발표</div>
+    </div>
+
+  </div><!-- /slide-area -->
+
+  <!-- 네비게이션 -->
+  <div id="nav-bar">
+    <button class="nav-btn" id="btn-prev">← 이전</button>
+    <span id="slide-counter">1 / 17</span>
+    <button class="nav-btn" id="btn-next">다음 →</button>
+  </div>
+
+  <div id="progress-bar"></div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide-card');
+const total = slides.length;
+let current = 0;
+
+const toc = document.getElementById('toc');
+const simpleToc = [
+  { num: '01', text: '표지', slide: 0 },
+  { num: '02', text: '실습 목차', slide: 1 },
+  { divider: '1부: 바이브 코딩 트랜드' },
+  { num: '03', text: '컨텍스트 관리 전략', slide: 3 },
+  { num: '04', text: 'Context Rot', slide: 4 },
+  { num: '05', text: 'OpenClaw', slide: 5 },
+  { num: '06', text: 'Harness', slide: 6 },
+  { num: '07', text: 'Paperclip', slide: 7 },
+  { divider: '2부: MCP' },
+  { num: '08', text: 'MCP 개요 — AI의 USB', slide: 9 },
+  { num: '09', text: 'Stitch MCP', slide: 10 },
+  { num: '10', text: 'Supabase MCP', slide: 11 },
+  { divider: '3부: Skills' },
+  { num: '11', text: 'Skills 구조와 작동', slide: 13 },
+  { num: '12', text: 'Skills 실습', slide: 14 },
+  { divider: '4부: Agent Team' },
+  { num: '13', text: 'Agent Team 개념', slide: 16 },
+  { num: '14', text: '오케스트레이션 패턴', slide: 17 },
+  { num: '15', text: 'Agent Team 실습', slide: 18 },
+  { divider: '5부: 서비스 만들기' },
+  { num: '16', text: '서비스 기획 프레임워크', slide: 20 },
+  { num: '17', text: '구현 가이드 & 체크리스트', slide: 21 },
+  { num: '18', text: '발표 구성 & 평가 기준', slide: 22 },
+  { num: '19', text: '마무리', slide: 23 },
+];
+
+const tocEls = [];
+simpleToc.forEach(item => {
+  if (item.divider) {
+    const d = document.createElement('div');
+    d.className = 'toc-section';
+    d.textContent = item.divider;
+    toc.appendChild(d);
+  } else {
+    const el = document.createElement('div');
+    el.className = 'toc-item';
+    el.innerHTML = `<span class="toc-num">${item.num}</span><span class="toc-text">${item.text}</span>`;
+    el.addEventListener('click', () => goTo(item.slide));
+    toc.appendChild(el);
+    tocEls.push({ el, slide: item.slide });
+  }
+});
+
+function updateToc() {
+  tocEls.forEach(({ el, slide }) => {
+    el.classList.toggle('active', slide === current);
+  });
+  const active = tocEls.find(t => t.slide === current);
+  if (active) active.el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function goTo(idx) {
+  if (idx < 0 || idx >= total) return;
+  slides[current].classList.remove('active');
+  current = idx;
+  slides[current].classList.add('active');
+  document.getElementById('slide-counter').textContent = `${current + 1} / ${total}`;
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === total - 1;
+  document.getElementById('progress-bar').style.width = `${((current + 1) / total) * 100}%`;
+  updateToc();
+  broadcastSlide(current);
+}
+
+document.getElementById('btn-prev').addEventListener('click', () => goTo(current - 1));
+document.getElementById('btn-next').addEventListener('click', () => goTo(current + 1));
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(current - 1);
+});
+
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 'cc_goto') goTo(parseInt(e.data.idx));
+});
+
+if (new URLSearchParams(location.search).has('embed')) {
+  document.getElementById('sidebar').style.display = 'none';
+  document.getElementById('nav-bar').style.display = 'none';
+}
+
+function broadcastSlide(idx) {
+  try { localStorage.setItem('cc_pres_slide', idx); } catch(e) {}
+}
+window.addEventListener('storage', e => {
+  if (e.key === 'cc_pres_slide') goTo(parseInt(e.newValue));
+});
+
+goTo(0);
+</script>
+</body>
+</html>
