@@ -1363,6 +1363,54 @@
       </div>
     </div>
 
+    <!-- 5부 실습: 나의 서비스 기획 워크시트 -->
+    <div class="slide-card" data-section="s5">
+      <div class="slide-section-badge">5부 실습</div>
+      <h2>나의 서비스 <span class="accent">기획 워크시트</span></h2>
+      <div class="slide-body">
+        <div class="strategy-list">
+          <div class="strategy-item">
+            <div class="s-num">1</div>
+            <div class="s-content">
+              <div class="s-title">문제 정의</div>
+              <div class="s-desc">"나는 <strong>[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</strong>이 반복되어 귀찮다"</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">2</div>
+            <div class="s-content">
+              <div class="s-title">솔루션</div>
+              <div class="s-desc">"<strong>[도구]</strong>로 <strong>[기능]</strong>을 만들어 <strong>[시간/노력]</strong>을 줄인다"</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">3</div>
+            <div class="s-content">
+              <div class="s-title">MVP 범위</div>
+              <div class="s-desc">"오늘 만들 딱 하나 → <strong>[&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;]</strong>"</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">4</div>
+            <div class="s-content">
+              <div class="s-title">사용 도구 선택</div>
+              <div class="s-desc" style="display:flex;gap:8px;flex-wrap:wrap;">
+                <span style="background:#f8f4ff;border:1px solid #ddd6fe;border-radius:4px;padding:3px 10px;font-size:12px;">Lovable</span>
+                <span style="background:#f8f4ff;border:1px solid #ddd6fe;border-radius:4px;padding:3px 10px;font-size:12px;">AI Studio</span>
+                <span style="background:#f8f4ff;border:1px solid #ddd6fe;border-radius:4px;padding:3px 10px;font-size:12px;">Claude Code</span>
+                <span style="background:#f8f4ff;border:1px solid #ddd6fe;border-radius:4px;padding:3px 10px;font-size:12px;">MCP</span>
+                <span style="background:#f8f4ff;border:1px solid #ddd6fe;border-radius:4px;padding:3px 10px;font-size:12px;">Skills</span>
+                <span style="background:#f8f4ff;border:1px solid #ddd6fe;border-radius:4px;padding:3px 10px;font-size:12px;">Agent Team</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="quote-box" style="margin-top:8px;">
+          <p>"MVP는 작을수록 좋다. 오늘 30분 안에 <strong>동작하는 것 하나</strong>만."</p>
+        </div>
+      </div>
+    </div>
+
     <!-- 14. 구현 가이드 -->
     <div class="slide-card" data-section="s5">
       <div class="slide-section-badge">5부</div>
@@ -1383,6 +1431,39 @@
           <div class="check-item"><div class="check-box"></div><div class="check-text"><strong>어떤 도구/기법을 사용했는지</strong> 설명할 수 있는가?</div></div>
           <div class="check-item"><div class="check-box"></div><div class="check-text"><strong>실제 업무에 적용 가능한가?</strong> 또는 적용 계획이 있는가?</div></div>
         </div>
+      </div>
+    </div>
+
+    <!-- 5부 실습: 30분 구현 타임박스 -->
+    <div class="slide-card" data-section="s5">
+      <div class="slide-section-badge">5부 실습</div>
+      <h2>30분 <span class="accent">구현 타임박스</span></h2>
+      <div class="slide-body">
+        <div class="stat-grid" style="margin-bottom:10px;">
+          <div class="stat-item">
+            <div class="num" style="font-size:18px;">0~10분</div>
+            <div class="desc">CLAUDE.md 작성 + 첫 프롬프트 실행<br><em style="font-size:10px;">화면에 뭔가 나오면 성공</em></div>
+          </div>
+          <div class="stat-item">
+            <div class="num" style="font-size:18px;">10~20분</div>
+            <div class="desc">핵심 기능 1개 작동 확인<br><em style="font-size:10px;">안 되면 더 작게 쪼개기</em></div>
+          </div>
+          <div class="stat-item">
+            <div class="num" style="font-size:18px;">20~30분</div>
+            <div class="desc">데모 화면 정리<br>발표 문장 2줄 작성</div>
+          </div>
+        </div>
+        <div class="compare-grid">
+          <div class="compare-card before">
+            <div class="label">막혔을 때</div>
+            <p style="font-size:12px;">에러 메시지 복사 + <strong>"기대 결과는 이것"</strong>을 함께 전달<br><br>3번 이상 같은 에러 → <code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-family:monospace;">/clear</code> 후 새 접근</p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">시간이 남으면</div>
+            <p style="font-size:12px;">디자인 개선<br>기능 1개 추가<br>Skills로 반복 동작 자동화</p>
+          </div>
+        </div>
+        <div class="warn-box" style="margin-top:8px;">⚠ 완성보다 동작이 우선 — 일부만 되어도 발표 가능합니다</div>
       </div>
     </div>
 
@@ -1418,6 +1499,47 @@
           <div class="stat-item"><div class="num" style="font-size:18px;">도구</div><div class="desc">배운 도구를 적절히 활용했는가</div></div>
           <div class="stat-item"><div class="num" style="font-size:18px;">실용</div><div class="desc">실제 문제를 해결하는가</div></div>
           <div class="stat-item"><div class="num" style="font-size:18px;">공유</div><div class="desc">다른 팀원에게 인사이트를 주는가</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5부 실습: 5분 발표 스크립트 템플릿 -->
+    <div class="slide-card" data-section="s5">
+      <div class="slide-section-badge">5부 실습</div>
+      <h2>발표 <span class="accent">스크립트 템플릿</span></h2>
+      <div class="slide-body">
+        <div class="strategy-list">
+          <div class="strategy-item">
+            <div class="s-num" style="background:#f59e0b;color:#000;">①</div>
+            <div class="s-content">
+              <div class="s-title">문제 & 동기 <em style="font-size:11px;font-weight:400;color:#888;">(30초)</em></div>
+              <div class="s-desc">"저는 <strong>[문제/불편함]</strong>이 있어서 이걸 만들었습니다."</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num" style="background:#f59e0b;color:#000;">②</div>
+            <div class="s-content">
+              <div class="s-title">라이브 데모 <em style="font-size:11px;font-weight:400;color:#888;">(2분)</em></div>
+              <div class="s-desc">실제 작동하는 화면 직접 시연 — 안 되면 만드는 과정 화면으로 대체 가능</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num" style="background:#f59e0b;color:#000;">③</div>
+            <div class="s-content">
+              <div class="s-title">기술 설명 <em style="font-size:11px;font-weight:400;color:#888;">(1분)</em></div>
+              <div class="s-desc">"<strong>[도구명]</strong>과 <strong>[기법]</strong>을 사용했고, <strong>[어려웠던 점]</strong>은 <strong>[이렇게]</strong> 해결했습니다."</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num" style="background:#f59e0b;color:#000;">④</div>
+            <div class="s-content">
+              <div class="s-title">배운 점 & 계획 <em style="font-size:11px;font-weight:400;color:#888;">(30초)</em></div>
+              <div class="s-desc">"앞으로 <strong>[실무 적용 계획]</strong>에 활용할 예정입니다."</div>
+            </div>
+          </div>
+        </div>
+        <div class="quote-box" style="margin-top:8px;">
+          <p>"동작하지 않아도 괜찮습니다. <strong>과정과 배운 점</strong>이 발표의 핵심입니다."</p>
         </div>
       </div>
     </div>
