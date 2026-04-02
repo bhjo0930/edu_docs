@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>강사 화면 — 바이브 코딩 기초 실습</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+    background: #0a0a0a;
+    color: #e0e0e0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── 상단 바 ── */
+  #top-bar {
+    height: 44px;
+    background: #111;
+    border-bottom: 1px solid #222;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  #top-bar .label {
+    font-size: 11px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+  }
+
+  #top-bar .sep { color: #2a2a2a; }
+
+  #top-bar .slide-info {
+    font-size: 12px;
+    color: #888;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #top-bar .slide-info strong { color: #ccc; }
+
+  #timer-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #timer {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f59e0b;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    min-width: 56px;
+  }
+
+  #timer:hover { color: #fbbf24; }
+
+  .timer-btn {
+    background: none;
+    border: none;
+    color: #444;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 4px;
+    transition: color 0.15s;
+  }
+  .timer-btn:hover { color: #aaa; }
+
+  /* ── 콘텐츠 영역 ── */
+  #content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    gap: 0;
+  }
+
+  /* ── 좌측: 슬라이드 iframe ── */
+  #slide-view {
+    flex: 1;
+    background: #0d0d0d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    min-width: 0;
+  }
+
+  #slide-frame-wrap {
+    width: 100%;
+    max-width: 900px;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.7);
+    border: 1px solid #2a2a2a;
+    position: relative;
+  }
+
+  #slide-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  /* ── 우측 패널 ── */
+  #right-panel {
+    width: 340px;
+    min-width: 300px;
+    background: #0d0d0d;
+    border-left: 1px solid #1e1e1e;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* 다음 슬라이드 */
+  #next-section {
+    padding: 14px 16px;
+    border-bottom: 1px solid #1a1a1a;
+    flex-shrink: 0;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  #next-card {
+    background: #141414;
+    border: 1px solid #252525;
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  #next-card .n-idx {
+    font-size: 11px;
+    color: #444;
+    font-weight: 700;
+    padding-top: 1px;
+    min-width: 24px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #next-card .n-body {}
+
+  #next-card .n-section {
+    font-size: 10px;
+    color: #555;
+    margin-bottom: 2px;
+  }
+
+  #next-card .n-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #999;
+    line-height: 1.4;
+    word-break: keep-all;
+  }
+
+  /* 노트 영역 */
+  #notes-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .notes-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 14px 16px;
+    overflow: hidden;
+    border-bottom: 1px solid #181818;
+    min-height: 0;
+  }
+
+  .notes-block:last-child { border-bottom: none; }
+
+  .notes-block-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #f59e0b;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .notes-block-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #1e1e1e;
+  }
+
+  .notes-content {
+    font-size: 13px;
+    color: #aaa;
+    line-height: 1.8;
+    word-break: keep-all;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .notes-content::-webkit-scrollbar { width: 4px; }
+  .notes-content::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+  .notes-content strong { color: #e0e0e0; font-weight: 600; }
+
+  /* ── 하단 네비게이션 ── */
+  #bottom-bar {
+    height: 52px;
+    background: #111;
+    border-top: 1px solid #1e1e1e;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .nav-btn {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #999;
+    padding: 7px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .nav-btn:hover { background: #252525; color: #f0f0f0; border-color: #444; }
+  .nav-btn:disabled { opacity: 0.25; cursor: default; }
+  .nav-btn:disabled:hover { background: #1a1a1a; color: #999; border-color: #2a2a2a; }
+
+  .nav-btn.primary { background: #f59e0b; border-color: #f59e0b; color: #000; }
+  .nav-btn.primary:hover { background: #fbbf24; border-color: #fbbf24; }
+  .nav-btn.primary:disabled { background: #1a1a1a; border-color: #2a2a2a; color: #999; }
+
+  #progress-wrap {
+    flex: 1;
+    height: 3px;
+    background: #1e1e1e;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  #progress-bar {
+    height: 100%;
+    background: #f59e0b;
+    border-radius: 2px;
+    transition: width 0.3s;
+    width: 0%;
+  }
+
+  #counter {
+    font-size: 12px;
+    color: #444;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  #sync-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: #333;
+    white-space: nowrap;
+  }
+
+  #sync-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  #sync-dot.syncing { animation: blink 0.5s 3; }
+</style>
+</head>
+<body>
+
+<!-- 상단 바 -->
+<div id="top-bar">
+  <span class="label">강사 화면</span>
+  <span class="sep">|</span>
+  <span class="slide-info" id="header-info"><strong>—</strong></span>
+  <div id="timer-wrap">
+    <button class="timer-btn" id="btn-pause" title="일시정지">⏸</button>
+    <button class="timer-btn" id="btn-reset" title="리셋">↺</button>
+    <span id="timer">00:00</span>
+  </div>
+</div>
+
+<!-- 메인 콘텐츠 -->
+<div id="content">
+
+  <!-- 좌측: 슬라이드 임베드 -->
+  <div id="slide-view">
+    <div id="slide-frame-wrap">
+      <iframe id="slide-frame" src="practice_basic.html?embed=1" title="슬라이드"></iframe>
+    </div>
+  </div>
+
+  <!-- 우측: 다음 슬라이드 + 노트 -->
+  <div id="right-panel">
+
+    <div id="next-section">
+      <div class="section-label">다음 슬라이드</div>
+      <div id="next-card">
+        <div class="n-idx" id="next-idx">—</div>
+        <div class="n-body">
+          <div class="n-section" id="next-section-name">—</div>
+          <div class="n-title" id="next-title">마지막 슬라이드입니다</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="notes-section">
+      <div class="notes-block">
+        <div class="notes-block-label">요약</div>
+        <div class="notes-content" id="notes-summary">—</div>
+      </div>
+      <div class="notes-block">
+        <div class="notes-block-label">스크립트</div>
+        <div class="notes-content" id="notes-script">—</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 하단 네비게이션 -->
+<div id="bottom-bar">
+  <button class="nav-btn" id="btn-prev">← 이전</button>
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <span id="counter">1 / 19</span>
+  <button class="nav-btn primary" id="btn-next">다음 →</button>
+  <div id="sync-status"><div id="sync-dot"></div><span>동기화</span></div>
+</div>
+
+<script>
+// ── 슬라이드 메타 ──
+const slides = [
+  { title: '바이브 코딩 기초 실습', section: '표지' },
+  { title: '실습 전체 흐름', section: '목차' },
+  { title: '1부: 바이브 코딩 주요 용어', section: '섹션', isDivider: true },
+  { title: '핵심 용어 (1)', section: '1부' },
+  { title: '핵심 용어 (2)', section: '1부' },
+  { title: '핵심 용어 (3)', section: '1부' },
+  { title: '프롬프트 잘 쓰는 법', section: '1부' },
+  { title: '2부: Full Stack Tool 사용하기', section: '섹션', isDivider: true },
+  { title: 'Google AI Studio로 시작하기', section: '2부' },
+  { title: 'Lovable로 풀스택 앱 만들기', section: '2부' },
+  { title: '3부: AI 기반 IDE', section: '섹션', isDivider: true },
+  { title: 'Cursor — AI 코드 에디터', section: '3부' },
+  { title: 'Antigravity IDE 사용하기', section: '3부' },
+  { title: '4부: AI 기반 CLI 터미널 도구', section: '섹션', isDivider: true },
+  { title: 'Gemini CLI', section: '4부' },
+  { title: 'Claude Code', section: '4부' },
+  { title: 'OpenAI Codex CLI', section: '4부' },
+  { title: '도구 비교 & 선택 가이드', section: '4부' },
+  { title: '마무리', section: '마무리' },
+];
+
+const total = slides.length;
+
+// ── 노트 데이터 ──
+const notesData = [
+  {
+    summary: "바이브 코딩 기초 실습 시작. AI 도구를 직접 써보며 익히는 실전 중심 실습. 4개 파트(용어 → Full Stack Tool → AI IDE → CLI)로 구성.",
+    script: "안녕하세요, 바이브 코딩 기초 실습에 오신 것을 환영합니다.\n\n오늘 실습의 목표는 하나입니다. '이해하고 나서 쓰는 것'이 아니라 '쓰면서 이해하는 것'입니다. 완벽하게 몰라도 괜찮습니다. 일단 따라 하다 보면 감이 잡힙니다.\n\n총 4개 파트로 진행합니다. 먼저 꼭 알아야 할 용어를 정리하고, 이어서 실제 도구를 하나씩 써볼 예정입니다."
+  },
+  {
+    summary: "실습 4파트 구성: 1부 바이브 코딩 용어 / 2부 Full Stack Tool(AI Studio, Lovable) / 3부 AI IDE(Cursor, Antigravity) / 4부 CLI(Gemini, Claude Code, Codex). '일단 따라 해보기'가 목표.",
+    script: "오늘 실습의 전체 흐름입니다.\n\n1부에서는 AI 도구를 쓸 때 자주 나오는 핵심 용어를 정리합니다. 2부에서는 코딩 없이 웹앱을 만드는 Full Stack Tool인 AI Studio와 Lovable을 사용해봅니다. 3부에서는 코드 에디터에 AI가 내장된 Cursor와 Antigravity를 살펴보고, 4부에서는 터미널에서 AI와 대화하는 CLI 도구들을 직접 써봅니다.\n\n슬라이드 하단의 인용구처럼, '완벽하게 이해하고 시작하지 않아도 됩니다. 일단 따라 해보면서 감을 잡는 것'이 오늘의 목표입니다."
+  },
+  {
+    summary: "1부 시작. AI 도구를 제대로 쓰려면 기본 용어를 알아야 한다. 모르면 AI에게 정확하게 요청하기 어렵고, 결과물의 문제를 파악하기도 힘들다.",
+    script: "1부를 시작하겠습니다. AI 도구를 쓸 때 자주 등장하는 용어들을 먼저 정리합니다.\n\n용어를 미리 알아두면 두 가지 장점이 있습니다. 첫째, AI에게 더 정확하게 요청할 수 있습니다. 둘째, 결과물이 이상할 때 원인을 파악하기 쉬워집니다. 어려운 개념이 아니니 가볍게 보시면 됩니다."
+  },
+  {
+    summary: "핵심 용어 6개: LLM(AI 핵심 엔진), 프롬프트(지시문), 컨텍스트(기억 범위), 토큰(처리 단위), 할루시네이션(사실 오류), 바이브 코딩(자연어로 코딩).",
+    script: "첫 번째 용어 세트입니다.\n\nLLM은 ChatGPT, Claude, Gemini 같은 AI의 핵심 엔진입니다. 방대한 텍스트를 학습해서 언어를 이해하고 생성하는 모델입니다.\n\n프롬프트는 AI에게 입력하는 지시문입니다. 어떻게 말하느냐에 따라 결과 품질이 크게 달라집니다. 오늘 2번째 파트에서 직접 연습해볼 예정입니다.\n\n컨텍스트는 AI가 한 번에 기억할 수 있는 대화나 문서의 범위입니다. 길수록 더 많은 정보를 참조해서 답합니다.\n\n토큰은 AI가 텍스트를 처리하는 최소 단위입니다. 영어 단어 하나가 대략 1토큰, 한국어는 글자나 형태소 단위입니다.\n\n할루시네이션은 중요합니다. AI가 사실이 아닌 내용을 자신 있게 말하는 현상입니다. 수치, 날짜, 출처는 반드시 직접 확인해야 합니다.\n\n바이브 코딩은 오늘 실습의 핵심 개념입니다. 코드를 직접 쓰지 않고, 자연어로 원하는 것만 말해서 AI가 코드를 만들게 하는 방식입니다."
+  },
+  {
+    summary: "핵심 용어 6개: AI 에이전트(자율 실행 AI), MCP(외부 도구 연결 표준), RAG(외부 문서 참조), 파인튜닝(도메인 특화 학습), MVP(최소 기능 제품), 풀스택(프론트+백엔드).",
+    script: "두 번째 용어 세트입니다.\n\nAI 에이전트는 목표를 주면 스스로 계획하고 실행하고 수정하는 AI입니다. 단순히 답변하는 것이 아니라 업무를 자율적으로 처리합니다.\n\nMCP는 AI가 외부 도구와 연결하는 표준 인터페이스입니다. Claude Code 같은 도구에서 파일 시스템, 데이터베이스, API 등과 연결할 때 사용합니다.\n\nRAG는 AI가 답변하기 전에 외부 문서를 검색해서 참조하는 방식입니다. 사내 자료나 최신 정보를 AI에 반영할 때 사용합니다.\n\nMVP는 핵심 기능만 담은 가장 작은 버전의 제품입니다. 바이브 코딩으로 빠르게 MVP를 만드는 것이 오늘 실습의 궁극적인 목표입니다.\n\n풀스택은 화면과 서버, DB를 모두 포함한 완전한 서비스를 의미합니다. AI 도구가 이를 자동으로 구현해줍니다."
+  },
+  {
+    summary: "IT 3층 구조 설명: 프론트엔드(화면), 백엔드(처리), DB(저장). API(연결 통로), 컴포넌트(화면 부품), CRUD(기본 4동작). AI에게 정확히 요청하기 위해 알아야 할 구조.",
+    script: "세 번째 용어 세트는 서비스 구조와 관련된 IT 용어입니다. 이 구조를 알면 AI에게 훨씬 정확하게 요청할 수 있습니다.\n\n서비스는 3층으로 이루어집니다. 프론트엔드는 사용자가 직접 보는 화면입니다. 버튼, 입력창, 목록 같은 것들이죠. '버튼을 크게 해줘'는 프론트엔드 요청입니다.\n\n백엔드는 버튼을 눌렀을 때 실제로 일어나는 처리입니다. 로그인 확인, 주문 처리, 권한 검사 같은 것들입니다. 사용자 눈에는 보이지 않습니다.\n\n데이터베이스는 정보를 저장하는 곳입니다. 서비스를 껐다 켜도 데이터가 남아있는 이유가 바로 DB 덕분입니다.\n\nAPI는 프론트엔드와 백엔드가 대화하는 통로입니다. '상품 목록 보여줘'라고 화면이 요청하면 API를 통해 백엔드가 응답합니다.\n\n컴포넌트는 프론트엔드를 이루는 작은 부품입니다. AI에게 '버튼 컴포넌트를 수정해줘'처럼 부품 단위로 요청하면 더 정확한 결과를 얻을 수 있습니다.\n\nCRUD는 DB의 기본 동작 4가지입니다. Create, Read, Update, Delete — 게시판을 예로 들면 글쓰기, 보기, 수정, 삭제입니다."
+  },
+  {
+    summary: "나쁜 프롬프트 vs 좋은 프롬프트 비교. 4단계 구조: 역할 지정 → 배경 설명 → 결과 명시 → 제약 조건. 구체적일수록 AI 결과 품질 높아짐.",
+    script: "프롬프트 작성법입니다. 이게 오늘 실습에서 가장 실용적인 내용입니다.\n\n왼쪽의 나쁜 프롬프트를 보세요. '보고서 만들어줘', '앱 만들어줘', '고쳐줘'. 이런 식으로 말하면 AI가 무엇을 원하는지 추측해야 합니다. 결과가 기대와 다를 확률이 높습니다.\n\n반면 좋은 프롬프트는 구체적입니다. 대상, 형식, 포함 내용을 명시합니다. 오른쪽 예시처럼 '20대 직장인, 카드뉴스 형식, 핵심 지표 3개를 담은 마케팅 성과 보고서 작성'이라고 하면 AI가 훨씬 정확하게 처리합니다.\n\n프롬프트의 4단계 구조를 기억하세요. 첫째 역할 지정 — '마케팅 전문가처럼', 둘째 배경 설명 — '우리 서비스는 이런 거야', 셋째 결과 명시 — '이런 형식으로 출력해줘', 넷째 제약 조건 — '300자 이내로'. 이 구조를 따르면 AI 결과 품질이 눈에 띄게 높아집니다.\n\n레퍼런스 이미지가 있다면 꼭 첨부하세요. 텍스트 설명만으로는 한계가 있는데, 이미지 한 장이 많은 것을 해결해줍니다."
+  },
+  {
+    summary: "2부 시작. 코딩 없이 완전한 웹 서비스를 만드는 Full Stack Tool 소개. AI Studio와 Lovable 두 가지 도구를 직접 실습.",
+    script: "2부를 시작합니다. 코딩 없이 완전한 웹 서비스를 만드는 도구들입니다.\n\n이 파트가 오늘 실습에서 가장 빠르게 결과를 볼 수 있는 구간입니다. 설치도 필요 없고, 브라우저에서 바로 시작할 수 있습니다. AI Studio와 Lovable, 두 가지 도구를 직접 써보겠습니다."
+  },
+  {
+    summary: "Google AI Studio: 무료, 브라우저 기반. Gemini 모델로 프롬프트 실험 + 웹앱 UI 생성. 실습: 할 일 목록(Todo) 앱 만들기. aistudio.google.com",
+    script: "첫 번째 도구는 Google AI Studio입니다.\n\nGemini 모델을 기반으로 프롬프트 실험, 웹앱과 UI 생성, API 키 발급까지 한 곳에서 처리할 수 있습니다. 완전 무료이고 Google 계정만 있으면 바로 시작할 수 있습니다.\n\n실습을 진행해보겠습니다. 먼저 aistudio.google.com에 접속해서 Google 계정으로 로그인합니다. 그리고 'Create new prompt'를 선택하거나 'Build' 탭에서 앱 생성을 시작합니다.\n\n이제 이 프롬프트를 입력해보세요. '간단한 할 일 목록 앱을 깔끔한 디자인으로 만들어줘'. 어떤 결과가 나오는지 같이 확인해봅시다.\n\n[실습 진행]\n\n어떠세요? 코드를 한 줄도 쓰지 않았는데 UI가 만들어졌습니다. 이게 바이브 코딩의 출발점입니다."
+  },
+  {
+    summary: "Lovable: 프론트엔드+백엔드+DB를 자연어 한 줄로 구현. 출시 1개월 만에 월 1억 달러 매출. 실습: 로그인 포함 업무 일지 앱 만들기. lovable.dev",
+    script: "두 번째 도구는 Lovable입니다.\n\nAI Studio가 UI를 만드는 도구라면, Lovable은 프론트엔드와 백엔드, DB까지 포함한 완전한 서비스를 자연어 한 줄로 구현합니다. 출시 한 달 만에 월 매출 1억 달러를 달성한, 현재 가장 주목받는 바이브 코딩 도구입니다.\n\n할 수 있는 것들을 보면, 로그인과 회원가입이 포함된 웹앱, 데이터 저장과 조회 기능, 대시보드와 관리자 화면, 결제 연동 MVP까지 가능합니다.\n\n실습 프롬프트입니다. lovable.dev에 접속해서 이 문장을 그대로 입력해보세요. '팀원들이 매일 업무 일지를 작성하고 공유할 수 있는 간단한 사내 업무 일지 앱을 만들어줘. 로그인 기능 포함.'\n\n[실습 진행]\n\n이렇게 한 문장으로 로그인까지 포함된 앱이 만들어집니다. 기획력이 있는 분이라면 AI Studio보다 Lovable이 더 강력한 도구가 될 수 있습니다."
+  },
+  {
+    summary: "3부 시작. 코드 에디터에 AI가 내장된 차세대 개발 환경. VS Code 기반으로 기존 개발자 환경과 호환. 코딩 경험이 있는 분께 적합.",
+    script: "3부입니다. 이번엔 코드 에디터에 AI가 내장된 도구들입니다.\n\n2부의 Full Stack Tool이 브라우저에서 처음부터 앱을 만드는 방식이라면, AI IDE는 기존에 만든 코드를 열어서 AI와 함께 수정하고 확장하는 방식입니다. VS Code에 익숙하신 분이라면 바로 쓸 수 있습니다."
+  },
+  {
+    summary: "Cursor: VS Code 기반 AI 코드 에디터. Fortune 500 절반 이상 사용. 핵심 기능 3가지 — Tab 자동완성, Agent 자율 코딩, BugBot PR 자동 리뷰. 실습: Cmd+K로 코드 수정. cursor.com",
+    script: "Cursor입니다.\n\nVS Code 기반의 AI 코드 에디터로, Fortune 500 기업 절반 이상이 사용하고 있습니다. OpenAI, Anthropic 등 최신 모델을 선택해서 쓸 수 있습니다.\n\n핵심 기능 세 가지를 보겠습니다.\n\n첫째, Tab 자동완성입니다. 다음 코드 블록을 예측해서 Tab 한 번으로 완성합니다. 단순 자동완성이 아니라 맥락을 이해한 예측입니다.\n\n둘째, Agent 모드입니다. 아이디어를 입력하면 에이전트가 독립적으로 파일을 생성하고 수정하고 실행합니다. 병렬 처리도 됩니다.\n\n셋째, BugBot입니다. GitHub 연동으로 Pull Request를 자동으로 검토해서 논리 버그나 보안 이슈를 감지하고 개선 방법을 제안합니다.\n\nVS Code에 익숙하신 분이라면 바로 사용 가능합니다. 실습을 원하시면 기존 HTML 파일을 열고 Cmd+K(Mac) 또는 Ctrl+K(Windows)를 눌러서 '버튼을 파란색으로 바꿔줘'라고 입력해보세요."
+  },
+  {
+    summary: "Antigravity: 코드베이스 전체 이해 AI 에디터. 기존 코드 맥락 파악 후 수정·추가 자동화. 비전공자도 기존 프로젝트 유지보수 가능. 실습: 기존 파일 열어서 인라인 수정. antigravity.dev",
+    script: "Antigravity입니다.\n\nCursor와 비슷하게 VS Code 기반이지만, Antigravity는 특히 기존 코드를 읽고 맥락을 파악해서 수정하고 추가하는 데 강점이 있습니다. 비전공자도 기존 프로젝트를 유지보수할 수 있는 수준을 목표로 설계된 도구입니다.\n\n핵심 기능 두 가지입니다.\n\n코드베이스 이해 기능은 프로젝트 전체 파일을 분석해서 '이 함수가 어디서 사용되나요?'처럼 구조적인 질문에 즉시 답해줍니다.\n\n인라인 AI 수정은 코드 위에서 바로 자연어로 '이 부분을 더 빠르게 바꿔줘'라고 입력하면 즉시 수정을 제안해줍니다.\n\n기술 담당자나 IT 팀에 속해 있고, 코딩 경험이 조금 있거나 기존 코드를 수정해야 하는 분께 특히 유용합니다."
+  },
+  {
+    summary: "4부 시작. 터미널에서 AI와 직접 대화하는 CLI 도구들. 전문가용이지만 기초 실습으로 체험 가능. Gemini(무료), Claude Code(유료), Codex(유료) 세 가지.",
+    script: "4부입니다. 터미널에서 AI와 직접 대화하는 CLI 도구들입니다.\n\nCLI는 Command Line Interface의 약자로, 마우스 없이 키보드로 명령어를 입력하는 방식입니다. '전문가용'처럼 들릴 수 있는데, 기초 실습 수준에서는 설치하고 간단한 명령어 하나 입력해보는 것이 목표입니다.\n\nGemini CLI는 무료로 시작할 수 있어서 가장 진입 장벽이 낮습니다. Claude Code와 Codex CLI는 유료지만 강력한 자동화 기능을 제공합니다."
+  },
+  {
+    summary: "Gemini CLI: Google 무료 CLI 도구. npm install 한 줄로 설치. Google 계정으로 로그인. 실습: 프로젝트 폴더에서 gemini '이 폴더 설명해줘' 입력. github.com/google-gemini/gemini-cli",
+    script: "Gemini CLI입니다.\n\nGoogle의 Gemini 모델을 터미널에서 바로 사용할 수 있는 도구입니다. 무료 티어를 제공하고, Google 계정만 있으면 시작할 수 있습니다.\n\n설치 방법입니다. 터미널을 열고 이 명령어를 입력하세요.\n\nnpm install -g @google/gemini-cli\n\n설치가 완료되면 gemini를 입력하고 Google 계정으로 로그인합니다.\n\n실습은 간단합니다. 프로젝트 폴더로 이동한 다음, 이렇게 입력해보세요.\n\ngemini '이 폴더에 있는 파일들을 설명해줘'\n\nCLI가 처음이신 분도 이 정도는 바로 따라 하실 수 있습니다. 화면에 설명이 나오는 걸 직접 확인해보세요."
+  },
+  {
+    summary: "Claude Code: Anthropic Claude 기반 터미널 에이전트. 유료(API 키 필요). 코드베이스 전체 이해, 파일 읽기/수정/실행 자율 처리. 실습: claude 'README 파일 한국어로 작성해줘'. claude.ai/code",
+    script: "Claude Code입니다. 현재 여러분이 대화하고 있는 Claude의 터미널 버전입니다.\n\nAnthropic의 Claude 모델 기반 에이전트로, 코드베이스 전체를 이해하고 파일 읽기, 수정, 실행을 자율적으로 처리합니다. 복잡한 다단계 작업 자동화에 탁월합니다.\n\n설치 명령어입니다.\n\nnpm install -g @anthropic-ai/claude-code\n\n설치 후 claude를 입력하면 Anthropic 계정 로그인이 필요합니다. API 키가 필요해서 비용이 발생합니다.\n\n실습 예시입니다. 프로젝트 폴더에서 이렇게 입력해보세요.\n\nclaude 'README 파일을 한국어로 작성해줘'\n\nGemini CLI와 달리 파일을 직접 생성하거나 수정할 수 있는 것이 특징입니다. 더 복잡한 작업도 처리 가능합니다."
+  },
+  {
+    summary: "Codex CLI: OpenAI GPT-4o 기반 터미널 에이전트. 유료(API 키 필요). 보안 샌드박스 모드로 안전한 코드 실행이 특징. 실습: codex '디렉토리 Python 스크립트 분석'. github.com/openai/codex",
+    script: "OpenAI의 Codex CLI입니다.\n\nGPT-4o 기반 터미널 에이전트로, 자연어 지시만으로 코드 작성, 테스트, 수정을 자동 실행합니다. 가장 큰 특징은 보안 샌드박스 모드입니다. 코드를 실행할 때 격리된 환경에서 안전하게 처리되어 시스템에 의도치 않은 영향을 줄 위험이 낮습니다.\n\n설치 명령어입니다.\n\nnpm install -g @openai/codex\n\n설치 후 codex를 입력하고 OpenAI API 키를 설정합니다.\n\n실습 예시입니다.\n\ncodex '현재 디렉토리의 Python 스크립트를 분석해줘'\n\nGemini CLI, Claude Code, Codex CLI 세 가지 모두 비슷한 명령어 구조를 가지고 있습니다. 하나에 익숙해지면 나머지도 쉽게 쓸 수 있습니다."
+  },
+  {
+    summary: "상황별 도구 추천: 비개발자 → AI Studio·Lovable / 코딩 경험 약간 → Antigravity / 무료 CLI 체험 → Gemini CLI / 전문가 자동화 → Claude Code·Codex. 오늘 과제: 하나 골라 10분 써보기.",
+    script: "도구 비교 및 선택 가이드입니다.\n\n어떤 도구를 써야 할지 모르겠다는 분들을 위해 상황별로 정리했습니다.\n\n비개발자이거나 처음 시작하신다면 AI Studio와 Lovable을 추천합니다. 설치 없이 브라우저에서 바로 시작할 수 있고, 결과물이 눈에 바로 보입니다.\n\n코딩 경험이 조금 있거나 기존 프로젝트를 수정해야 하는 분이라면 Antigravity IDE가 맞습니다. VS Code 환경에서 바로 쓸 수 있습니다.\n\nCLI를 무료로 체험해보고 싶다면 Gemini CLI를 선택하세요. Google 계정만 있으면 됩니다.\n\n이미 개발에 익숙하고 복잡한 자동화를 구축하려면 Claude Code나 Codex를 선택합니다. 다만 API 비용이 발생합니다.\n\n오늘의 과제를 드립니다. 지금 소개한 도구 중 하나를 골라서 10분 써보세요. 어디서 시작해야 할지 모르겠다면 AI Studio로 가세요. 브라우저에서 바로 실행됩니다."
+  },
+  {
+    summary: "마무리. 도구는 쓸수록 익숙해진다. 오늘 배운 용어와 도구를 실제 업무 한 가지에 적용해보기. 추천 첫 번째 실습: AI Studio에서 반복 업무 자동화 프롬프트 작성.",
+    script: "오늘 실습을 마무리합니다.\n\n여러 도구를 보셨는데, 처음엔 당연히 어색합니다. 하지만 도구는 쓸수록 익숙해집니다. 처음 스마트폰을 쓸 때를 생각해보세요. 지금은 아무렇지 않죠. AI 도구도 마찬가지입니다.\n\n오늘 배운 용어와 도구, 딱 하나만 실제 업무에 적용해보시면 됩니다. 거창한 프로젝트가 아니어도 됩니다.\n\n추천 첫 번째 실습은 AI Studio에서 '내가 매주 하는 반복 업무'를 자동화하는 프롬프트를 작성해보는 겁니다. 매주 만드는 보고서, 정리하는 데이터, 보내는 이메일 — 무엇이든 됩니다.\n\n오늘 실습에 참여해주셔서 감사합니다. 질문이 있으신 분들은 지금 편하게 질문해 주세요."
+  }
+];
+
+// ── 상태 ──
+let current = 0;
+
+// ── UI 업데이트 ──
+function updateUI() {
+  const s = slides[current];
+  const note = notesData[current] || {};
+  const next = slides[current + 1];
+
+  // 상단 정보
+  document.getElementById('header-info').innerHTML =
+    `<strong>${String(current + 1).padStart(2,'0')} / ${total}</strong> — ${s.title} <span style="color:#555">(${s.section})</span>`;
+
+  // 다음 슬라이드
+  if (next) {
+    document.getElementById('next-idx').textContent = String(current + 2).padStart(2,'0');
+    document.getElementById('next-section-name').textContent = next.section;
+    document.getElementById('next-title').textContent = next.title;
+  } else {
+    document.getElementById('next-idx').textContent = '—';
+    document.getElementById('next-section-name').textContent = '';
+    document.getElementById('next-title').textContent = '마지막 슬라이드입니다';
+  }
+
+  // 노트
+  document.getElementById('notes-summary').innerHTML = note.summary || '';
+  document.getElementById('notes-script').innerHTML = note.script || '';
+
+  // 카운터, 프로그레스
+  document.getElementById('counter').textContent = `${current + 1} / ${total}`;
+  document.getElementById('progress-bar').style.width = `${((current + 1) / total) * 100}%`;
+
+  // 버튼
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === total - 1;
+}
+
+// ── 슬라이드 이동 ──
+function goTo(idx, broadcast = true) {
+  if (idx < 0 || idx >= total) return;
+  current = idx;
+  updateUI();
+  if (broadcast) {
+    const frame = document.getElementById('slide-frame');
+    if (frame && frame.contentWindow) {
+      frame.contentWindow.postMessage({ type: 'cc_goto', idx }, '*');
+    }
+    try { localStorage.setItem('cc_pres_slide', idx); } catch(e) {}
+    const dot = document.getElementById('sync-dot');
+    dot.classList.remove('syncing');
+    void dot.offsetWidth;
+    dot.classList.add('syncing');
+  }
+}
+
+// ── localStorage 동기화 ──
+window.addEventListener('storage', e => {
+  if (e.key === 'cc_pres_slide') {
+    const idx = parseInt(e.newValue);
+    if (!isNaN(idx) && idx !== current) goTo(idx, false);
+  }
+});
+
+// ── 네비게이션 버튼 ──
+document.getElementById('btn-prev').addEventListener('click', () => goTo(current - 1));
+document.getElementById('btn-next').addEventListener('click', () => goTo(current + 1));
+
+// ── 키보드 ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(current - 1);
+});
+
+// ── 타이머 ──
+let timerSec = 0, timerRunning = true;
+const timerEl = document.getElementById('timer');
+
+setInterval(() => {
+  if (!timerRunning) return;
+  timerSec++;
+  const m = String(Math.floor(timerSec / 60)).padStart(2,'0');
+  const s = String(timerSec % 60).padStart(2,'0');
+  timerEl.textContent = `${m}:${s}`;
+  if (timerSec >= 3600)      timerEl.style.color = '#ef4444';
+  else if (timerSec >= 2700) timerEl.style.color = '#f97316';
+  else                       timerEl.style.color = '#f59e0b';
+}, 1000);
+
+document.getElementById('btn-pause').addEventListener('click', () => {
+  timerRunning = !timerRunning;
+  document.getElementById('btn-pause').textContent = timerRunning ? '⏸' : '▶';
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  timerSec = 0; timerRunning = true;
+  timerEl.style.color = '#f59e0b';
+  timerEl.textContent = '00:00';
+  document.getElementById('btn-pause').textContent = '⏸';
+});
+
+// ── 초기화 ──
+try {
+  const saved = localStorage.getItem('cc_pres_slide');
+  if (saved !== null) current = parseInt(saved) || 0;
+} catch(e) {}
+
+goTo(current, false);
+
+document.getElementById('slide-frame').addEventListener('load', () => {
+  const frame = document.getElementById('slide-frame');
+  if (frame && frame.contentWindow) {
+    frame.contentWindow.postMessage({ type: 'cc_goto', idx: current }, '*');
+  }
+});
+</script>
+</body>
+</html>
