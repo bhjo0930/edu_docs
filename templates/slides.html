@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- CUSTOMIZE: 강의 제목 -->
+<title>강의 제목</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+    background: #0d0d0d;
+    color: #e5e5e5;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  #sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: #141414;
+    border-right: 1px solid #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #sidebar-header {
+    padding: 20px 16px 12px;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  #sidebar-header .logo {
+    font-size: 13px;
+    color: #888;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  #sidebar-header .title {
+    font-size: 12px;
+    color: #f59e0b;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  #sidebar-label {
+    padding: 14px 16px 6px;
+    font-size: 11px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  #toc {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0 16px;
+  }
+
+  #toc::-webkit-scrollbar { width: 4px; }
+  #toc::-webkit-scrollbar-track { background: transparent; }
+  #toc::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+  .toc-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 7px 16px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: background 0.15s;
+  }
+
+  .toc-item:hover { background: #1e1e1e; }
+  .toc-item.active { background: #1e1e1e; border-left-color: #f59e0b; }
+  .toc-item.active .toc-num { color: #f59e0b; }
+  .toc-item.active .toc-text { color: #f0f0f0; }
+
+  .toc-num {
+    font-size: 10px;
+    color: #444;
+    min-width: 18px;
+    font-weight: 600;
+    padding-top: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .toc-text {
+    font-size: 11.5px;
+    color: #666;
+    line-height: 1.4;
+    word-break: keep-all;
+  }
+
+  .toc-section {
+    padding: 12px 16px 4px;
+    font-size: 10px;
+    color: #3a3a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+
+  #main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #slide-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide-card {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    padding: 40px 48px;
+    overflow-y: auto;
+  }
+
+  .slide-card.active { display: flex; }
+  .slide-card:not(.slide-cover):not(.slide-section-divider):not(.slide-closing) { background: #fff; color: #1a1a1a; }
+
+  .slide-section-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: #f59e0b;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+
+  .slide-card h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #111;
+    line-height: 1.25;
+    margin-bottom: 18px;
+    word-break: keep-all;
+  }
+
+  .accent { color: #f59e0b; }
+
+  .slide-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  /* ── 커버 ── */
+  .slide-cover {
+    background: #0d0d0d;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .cover-tag {
+    font-size: 11px;
+    color: #f59e0b;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 16px;
+  }
+
+  .slide-cover h1 {
+    font-size: 42px;
+    font-weight: 900;
+    color: #f0f0f0;
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+
+  .accent-line {
+    width: 48px;
+    height: 3px;
+    background: #f59e0b;
+    border-radius: 2px;
+    margin-bottom: 16px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    color: #666;
+    line-height: 1.7;
+    max-width: 420px;
+    word-break: keep-all;
+  }
+
+  /* ── 섹션 divider ── */
+  .slide-section-divider {
+    background: #111;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 48px 56px;
+  }
+
+  .slide-section-divider .section-num {
+    font-size: 72px;
+    font-weight: 900;
+    color: #1e1e1e;
+    line-height: 1;
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .slide-section-divider .section-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #f0f0f0;
+    line-height: 1.25;
+    margin-bottom: 16px;
+    word-break: keep-all;
+  }
+
+  .slide-section-divider .accent-bar {
+    width: 40px;
+    height: 3px;
+    background: #f59e0b;
+    border-radius: 2px;
+    margin-bottom: 14px;
+  }
+
+  .slide-section-divider .section-desc {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+    max-width: 480px;
+    word-break: keep-all;
+  }
+
+  /* ── 마무리 ── */
+  .slide-closing {
+    background: #0d0d0d;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .closing-msg {
+    font-size: 28px;
+    font-weight: 800;
+    color: #f0f0f0;
+    line-height: 1.4;
+    margin-bottom: 24px;
+    word-break: keep-all;
+    max-width: 560px;
+  }
+
+  .closing-msg strong { color: #f59e0b; font-weight: 700; }
+
+  .closing-footer {
+    font-size: 13px;
+    color: #444;
+    line-height: 1.7;
+    word-break: keep-all;
+  }
+
+  /* ── TOC 슬라이드 ── */
+  .toc-slide-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    flex: 1;
+  }
+
+  .toc-slide-item {
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .toc-slide-item .t-num {
+    font-size: 28px;
+    font-weight: 900;
+    color: #f0f0f0;
+    line-height: 1;
+    min-width: 32px;
+  }
+
+  .toc-slide-item .t-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #333;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+
+  /* ── compare-grid ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .compare-card {
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 16px 18px;
+    border-left: 3px solid #e5e7eb;
+  }
+
+  .compare-card.before { border-left-color: #ef4444; }
+  .compare-card.after { border-left-color: #22c55e; }
+
+  .compare-card .label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #888;
+    margin-bottom: 8px;
+  }
+
+  .compare-card p { font-size: 13px; color: #444; line-height: 1.7; word-break: keep-all; }
+
+  /* ── workflow ── */
+  .workflow { display: flex; flex-direction: column; gap: 8px; }
+
+  .workflow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 12px 16px;
+    border-left: 3px solid #e5e7eb;
+  }
+
+  .workflow-step.highlight { border-left-color: #f59e0b; background: #fffbf0; }
+
+  .w-step {
+    font-size: 10px;
+    font-weight: 700;
+    color: #f59e0b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    min-width: 40px;
+    padding-top: 1px;
+  }
+
+  .w-text { font-size: 13px; color: #333; line-height: 1.6; word-break: keep-all; }
+
+  /* ── principle-grid ── */
+  .principle-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    flex: 1;
+  }
+
+  .principle-item {
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+
+  .principle-item .p-num {
+    font-size: 10px;
+    font-weight: 700;
+    color: #f59e0b;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .principle-item .p-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 6px;
+    word-break: keep-all;
+  }
+
+  .principle-item .p-desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.6;
+    word-break: keep-all;
+  }
+
+  /* ── stat-grid ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .stat-item {
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 20px 16px;
+    text-align: center;
+  }
+
+  .stat-item .num {
+    font-size: 36px;
+    font-weight: 900;
+    color: #f59e0b;
+    line-height: 1;
+    margin-bottom: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-item .desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+
+  /* ── strategy-list ── */
+  .strategy-list { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+  .strategy-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+
+  .s-num {
+    width: 26px;
+    height: 26px;
+    background: #111;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .s-content { flex: 1; }
+
+  .s-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 3px;
+    word-break: keep-all;
+  }
+
+  .s-desc { font-size: 12px; color: #666; line-height: 1.6; word-break: keep-all; }
+
+  /* ── code-block ── */
+  .code-block {
+    background: #1e1e1e;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .code-label {
+    font-size: 10px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    font-family: inherit;
+  }
+
+  .code-block code { font-size: 12px; line-height: 1.7; display: block; }
+
+  .ky { color: #f59e0b; }
+  .st { color: #86efac; }
+  .cm { color: #6b7280; }
+  .fn { color: #93c5fd; }
+
+  /* ── quote-box ── */
+  .quote-box {
+    background: #fffbf0;
+    border-left: 3px solid #f59e0b;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+  }
+
+  .quote-box p {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.7;
+    font-style: italic;
+    word-break: keep-all;
+  }
+
+  /* ── warn-box ── */
+  .warn-box {
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 12px;
+    color: #78350f;
+    line-height: 1.6;
+  }
+
+  /* ── 하단 네비게이션 ── */
+  #nav-bar {
+    height: 48px;
+    background: #111;
+    border-top: 1px solid #1e1e1e;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .nav-btn {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #999;
+    padding: 6px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+
+  .nav-btn:hover { background: #252525; color: #f0f0f0; border-color: #444; }
+  .nav-btn:disabled { opacity: 0.25; cursor: default; }
+  .nav-btn.primary { background: #f59e0b; border-color: #f59e0b; color: #000; }
+  .nav-btn.primary:hover { background: #fbbf24; }
+  .nav-btn.primary:disabled { background: #1a1a1a; border-color: #2a2a2a; color: #999; }
+
+  #progress-wrap {
+    flex: 1;
+    height: 3px;
+    background: #1e1e1e;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  #progress-bar {
+    height: 100%;
+    background: #f59e0b;
+    border-radius: 2px;
+    transition: width 0.3s;
+    width: 0%;
+  }
+
+  #slide-counter {
+    font-size: 12px;
+    color: #444;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    min-width: 48px;
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<!-- 좌측 사이드바 -->
+<div id="sidebar">
+  <div id="sidebar-header">
+    <!-- CUSTOMIZE: 사이드바 로고·제목 -->
+    <div class="logo">강의 시리즈명</div>
+    <div class="title">강의 제목<br>부제목</div>
+  </div>
+  <div id="sidebar-label">목차</div>
+  <div id="toc"></div>
+</div>
+
+<!-- 메인 영역 -->
+<div id="main">
+  <div id="slide-area">
+
+    <!-- ── 0. 커버 ── -->
+    <!-- CUSTOMIZE: 커버 슬라이드 -->
+    <div class="slide-card slide-cover active" data-section="cover">
+      <div class="cover-tag">강의 태그라인</div>
+      <h1>강의 제목<br>부제목</h1>
+      <div class="accent-line"></div>
+      <div class="subtitle">핵심 키워드 1 · 핵심 키워드 2 · 핵심 키워드 3<br>한 줄 강의 설명</div>
+    </div>
+
+    <!-- ── 1. TOC ── -->
+    <!-- CUSTOMIZE: 전체 흐름 슬라이드 — 파트명 변경 -->
+    <div class="slide-card" data-section="cover">
+      <div class="slide-section-badge">Overview</div>
+      <h2>전체 흐름</h2>
+      <div class="slide-body">
+        <div class="toc-slide-grid">
+          <div class="toc-slide-item"><div class="t-num">1</div><div class="t-label">1부 제목<br><em style="font-size:11px;color:#aaa;">슬라이드 A · 슬라이드 B</em></div></div>
+          <div class="toc-slide-item"><div class="t-num">2</div><div class="t-label">2부 제목<br><em style="font-size:11px;color:#aaa;">슬라이드 A · 슬라이드 B</em></div></div>
+          <div class="toc-slide-item"><div class="t-num">3</div><div class="t-label">3부 제목<br><em style="font-size:11px;color:#aaa;">슬라이드 A · 슬라이드 B</em></div></div>
+          <div class="toc-slide-item"><div class="t-num">4</div><div class="t-label">4부 제목<br><em style="font-size:11px;color:#aaa;">슬라이드 A · 슬라이드 B</em></div></div>
+          <div class="toc-slide-item" style="grid-column:1/-1;"><div class="t-num">5</div><div class="t-label">5부 제목<br><em style="font-size:11px;color:#aaa;">슬라이드 A · 슬라이드 B</em></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 섹션 1 ─── -->
+    <!-- CUSTOMIZE: 1부 제목·설명 -->
+    <div class="slide-card slide-section-divider" data-section="s1">
+      <div class="section-num">01</div>
+      <div class="section-title">1부 제목<br>부제목</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">이 파트에서 다룰 내용 한 줄 요약</div>
+    </div>
+
+    <!-- ── 3. 1부 슬라이드 A — compare-grid 예시 ── -->
+    <!-- CUSTOMIZE: 슬라이드 내용 -->
+    <div class="slide-card" data-section="s1">
+      <div class="slide-section-badge">1부</div>
+      <h2>슬라이드 A 제목 <span class="accent">핵심 키워드</span></h2>
+      <div class="slide-body">
+        <div class="compare-grid">
+          <div class="compare-card before">
+            <div class="label">Before / 문제</div>
+            <p>기존 방식의 문제점이나 한계를 설명합니다. 2~3줄 정도가 적당합니다.</p>
+          </div>
+          <div class="compare-card after">
+            <div class="label">After / 해결</div>
+            <p>새로운 방식이나 해결책을 설명합니다. Before와 대비되도록 작성합니다.</p>
+          </div>
+        </div>
+        <div class="quote-box">
+          <p>"이 슬라이드의 핵심 메시지를 한 문장으로 — 수강생이 기억할 문장"</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 4. 1부 슬라이드 B — workflow 예시 ── -->
+    <!-- CUSTOMIZE: 슬라이드 내용 -->
+    <div class="slide-card" data-section="s1">
+      <div class="slide-section-badge">1부</div>
+      <h2>슬라이드 B 제목 <span class="accent">단계별 흐름</span></h2>
+      <div class="slide-body">
+        <div class="workflow">
+          <div class="workflow-step"><div class="w-step">Step 1</div><div class="w-text">첫 번째 단계 설명. 수강생이 실제로 해야 하는 행동을 구체적으로 씁니다.</div></div>
+          <div class="workflow-step"><div class="w-step">Step 2</div><div class="w-text">두 번째 단계 설명. 첫 번째 단계의 결과물을 받아 처리하는 내용입니다.</div></div>
+          <div class="workflow-step highlight"><div class="w-step">핵심</div><div class="w-text"><strong>이 단계가 가장 중요합니다.</strong> 핵심 포인트를 강조할 때 highlight 클래스를 씁니다.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 섹션 2 ─── -->
+    <!-- CUSTOMIZE: 2부 제목·설명 -->
+    <div class="slide-card slide-section-divider" data-section="s2">
+      <div class="section-num">02</div>
+      <div class="section-title">2부 제목<br>부제목</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">이 파트에서 다룰 내용 한 줄 요약</div>
+    </div>
+
+    <!-- ── 6. 2부 슬라이드 A — principle-grid 예시 ── -->
+    <!-- CUSTOMIZE: 슬라이드 내용 -->
+    <div class="slide-card" data-section="s2">
+      <div class="slide-section-badge">2부</div>
+      <h2>슬라이드 A 제목 <span class="accent">4가지 핵심</span></h2>
+      <div class="slide-body">
+        <div class="principle-grid">
+          <div class="principle-item">
+            <div class="p-num">개념 1</div>
+            <div class="p-title">첫 번째 개념 제목</div>
+            <div class="p-desc">첫 번째 개념에 대한 2~3줄 설명입니다. 구체적인 예시를 포함하면 좋습니다.</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">개념 2</div>
+            <div class="p-title">두 번째 개념 제목</div>
+            <div class="p-desc">두 번째 개념에 대한 설명입니다. 첫 번째와 어떻게 다른지 명확하게 씁니다.</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">개념 3</div>
+            <div class="p-title">세 번째 개념 제목</div>
+            <div class="p-desc">세 번째 개념 설명입니다. 실무에서 어떻게 적용되는지 연결하면 좋습니다.</div>
+          </div>
+          <div class="principle-item">
+            <div class="p-num">개념 4</div>
+            <div class="p-title">네 번째 개념 제목</div>
+            <div class="p-desc">네 번째 개념 설명입니다. 앞의 세 개념과 어떻게 연결되는지 설명합니다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 7. 2부 슬라이드 B — code-block + warn-box 예시 ── -->
+    <!-- CUSTOMIZE: 슬라이드 내용 -->
+    <div class="slide-card" data-section="s2">
+      <div class="slide-section-badge">2부</div>
+      <h2>슬라이드 B 제목 <span class="accent">코드 예시</span></h2>
+      <div class="slide-body">
+        <div class="code-block" style="margin-bottom:8px;">
+          <div class="code-label">파일명 또는 설명</div>
+          <code><span class="ky">키워드</span><span class="st"> "문자열 값"</span></code>
+          <code><span class="ky">설정키:</span> <span class="fn">함수명</span><span class="ky">(</span><span class="st">"인자"</span><span class="ky">)</span></code>
+          <code><span class="cm"># 주석: 이 부분에 대한 설명</span></code>
+          <code><span class="st">실제 명령어나 코드를 여기에</span></code>
+        </div>
+        <div class="workflow">
+          <div class="workflow-step"><div class="w-step">Step 1</div><div class="w-text">위 코드의 첫 번째 사용 단계 설명</div></div>
+          <div class="workflow-step"><div class="w-step">Step 2</div><div class="w-text">두 번째 단계 설명</div></div>
+          <div class="workflow-step highlight"><div class="w-step">Step 3</div><div class="w-text"><strong>결과 확인:</strong> 이렇게 되면 성공입니다</div></div>
+        </div>
+        <div class="warn-box">⚠ 주의사항: 이 부분을 빠뜨리면 안 되는 이유와 올바른 처리 방법</div>
+      </div>
+    </div>
+
+    <!-- ─── 섹션 3 ─── -->
+    <!-- CUSTOMIZE: 3부 제목·설명 -->
+    <div class="slide-card slide-section-divider" data-section="s3">
+      <div class="section-num">03</div>
+      <div class="section-title">3부 제목<br>부제목</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">이 파트에서 다룰 내용 한 줄 요약</div>
+    </div>
+
+    <!-- ── 9. 3부 슬라이드 A — stat-grid 예시 ── -->
+    <!-- CUSTOMIZE: 슬라이드 내용 -->
+    <div class="slide-card" data-section="s3">
+      <div class="slide-section-badge">3부</div>
+      <h2>슬라이드 A 제목 <span class="accent">핵심 수치</span></h2>
+      <div class="slide-body">
+        <div class="stat-grid" style="margin-bottom:10px;">
+          <div class="stat-item">
+            <div class="num">73%</div>
+            <div class="desc">첫 번째 통계 설명<br><em style="font-size:10px;">출처 또는 맥락</em></div>
+          </div>
+          <div class="stat-item">
+            <div class="num">2.4×</div>
+            <div class="desc">두 번째 수치 설명<br><em style="font-size:10px;">출처 또는 맥락</em></div>
+          </div>
+          <div class="stat-item">
+            <div class="num">30분</div>
+            <div class="desc">세 번째 수치 설명<br><em style="font-size:10px;">출처 또는 맥락</em></div>
+          </div>
+        </div>
+        <div class="quote-box">
+          <p>"수치가 말하는 핵심 메시지를 한 문장으로 요약합니다."</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 10. 3부 슬라이드 B — strategy-list 예시 ── -->
+    <!-- CUSTOMIZE: 슬라이드 내용 -->
+    <div class="slide-card" data-section="s3">
+      <div class="slide-section-badge">3부</div>
+      <h2>슬라이드 B 제목 <span class="accent">4단계 전략</span></h2>
+      <div class="slide-body">
+        <div class="strategy-list">
+          <div class="strategy-item">
+            <div class="s-num">1</div>
+            <div class="s-content">
+              <div class="s-title">첫 번째 전략 제목</div>
+              <div class="s-desc">첫 번째 전략에 대한 설명. 왜 이것이 중요한지, 어떻게 실행하는지 씁니다.</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">2</div>
+            <div class="s-content">
+              <div class="s-title">두 번째 전략 제목</div>
+              <div class="s-desc">두 번째 전략 설명. 앞 단계와의 연결고리를 명확히 합니다.</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">3</div>
+            <div class="s-content">
+              <div class="s-title">세 번째 전략 제목</div>
+              <div class="s-desc">세 번째 전략 설명. 구체적인 실행 방법을 포함하면 좋습니다.</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">4</div>
+            <div class="s-content">
+              <div class="s-title">네 번째 전략 제목</div>
+              <div class="s-desc">마지막 전략 설명. 전체 흐름의 결론이나 다음 파트로의 연결을 담으면 좋습니다.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 섹션 4 ─── -->
+    <!-- CUSTOMIZE: 4부 제목·설명 -->
+    <div class="slide-card slide-section-divider" data-section="s4">
+      <div class="section-num">04</div>
+      <div class="section-title">4부 제목<br>부제목</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">이 파트에서 다룰 내용 한 줄 요약</div>
+    </div>
+
+    <!-- ── 12. 4부 슬라이드 A — workflow + quote-box 예시 ── -->
+    <!-- CUSTOMIZE: 슬라이드 내용 -->
+    <div class="slide-card" data-section="s4">
+      <div class="slide-section-badge">4부</div>
+      <h2>슬라이드 A 제목 <span class="accent">실행 흐름</span></h2>
+      <div class="slide-body">
+        <div class="workflow" style="margin-bottom:10px;">
+          <div class="workflow-step"><div class="w-step">준비</div><div class="w-text">실행 전 준비 단계. 필요한 도구나 사전 조건을 설명합니다.</div></div>
+          <div class="workflow-step"><div class="w-step">실행</div><div class="w-text">핵심 실행 단계. 가장 중요한 행동을 구체적으로 씁니다.</div></div>
+          <div class="workflow-step"><div class="w-step">확인</div><div class="w-text">결과 확인 방법. 성공 기준이 무엇인지 명확하게 씁니다.</div></div>
+          <div class="workflow-step highlight"><div class="w-step">핵심</div><div class="w-text"><strong>이것만 기억하세요:</strong> 이 슬라이드에서 가장 중요한 한 가지</div></div>
+        </div>
+        <div class="quote-box">
+          <p>"이 파트의 핵심 통찰을 한 문장으로 — 수강생이 가져갈 메시지"</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 13. 4부 슬라이드 B — compare-grid 응용 ── -->
+    <!-- CUSTOMIZE: 슬라이드 내용 -->
+    <div class="slide-card" data-section="s4">
+      <div class="slide-section-badge">4부</div>
+      <h2>슬라이드 B 제목 <span class="accent">비교 분석</span></h2>
+      <div class="slide-body">
+        <div class="compare-grid" style="margin-bottom:10px;">
+          <div class="compare-card" style="border-left-color:#f59e0b;">
+            <div class="label">방법 A</div>
+            <p>첫 번째 방법의 특징, 장단점, 적합한 상황을 설명합니다.</p>
+          </div>
+          <div class="compare-card" style="border-left-color:#6366f1;">
+            <div class="label">방법 B</div>
+            <p>두 번째 방법의 특징, 장단점, 적합한 상황을 설명합니다.</p>
+          </div>
+        </div>
+        <div class="workflow">
+          <div class="workflow-step highlight"><div class="w-step">추천</div><div class="w-text">이 상황에서는 <strong>방법 A/B</strong>를 추천합니다. 이유: 구체적인 추천 근거</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── 섹션 5 ─── -->
+    <!-- CUSTOMIZE: 5부 제목·설명 -->
+    <div class="slide-card slide-section-divider" data-section="s5">
+      <div class="section-num">05</div>
+      <div class="section-title">5부 제목<br>부제목</div>
+      <div class="accent-bar"></div>
+      <div class="section-desc">이 파트에서 다룰 내용 한 줄 요약</div>
+    </div>
+
+    <!-- ── 15. 5부 슬라이드 A — strategy-list 응용 ── -->
+    <!-- CUSTOMIZE: 슬라이드 내용 -->
+    <div class="slide-card" data-section="s5">
+      <div class="slide-section-badge">5부</div>
+      <h2>슬라이드 A 제목 <span class="accent">실전 가이드</span></h2>
+      <div class="slide-body">
+        <div class="strategy-list">
+          <div class="strategy-item">
+            <div class="s-num">1</div>
+            <div class="s-content">
+              <div class="s-title">실전 단계 1</div>
+              <div class="s-desc">가장 먼저 해야 할 것. 구체적인 행동 지침을 씁니다.</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">2</div>
+            <div class="s-content">
+              <div class="s-title">실전 단계 2</div>
+              <div class="s-desc">두 번째 단계. 1단계의 결과를 받아서 진행하는 내용입니다.</div>
+            </div>
+          </div>
+          <div class="strategy-item">
+            <div class="s-num">3</div>
+            <div class="s-content">
+              <div class="s-title">실전 단계 3</div>
+              <div class="s-desc">세 번째 단계. 이 단계가 끝나면 수강생이 달성한 것이 무엇인지 씁니다.</div>
+            </div>
+          </div>
+        </div>
+        <div class="warn-box" style="margin-top:8px;">⚠ 자주 하는 실수: 이렇게 하면 안 됩니다 — 올바른 방법은 이것입니다</div>
+      </div>
+    </div>
+
+    <!-- ── 16. 5부 슬라이드 B — stat-grid + quote-box 응용 ── -->
+    <!-- CUSTOMIZE: 슬라이드 내용 -->
+    <div class="slide-card" data-section="s5">
+      <div class="slide-section-badge">5부</div>
+      <h2>슬라이드 B 제목 <span class="accent">핵심 정리</span></h2>
+      <div class="slide-body">
+        <div class="stat-grid" style="margin-bottom:10px;">
+          <div class="stat-item">
+            <div class="num" style="font-size:22px;">포인트 1</div>
+            <div class="desc">첫 번째 핵심 포인트 설명</div>
+          </div>
+          <div class="stat-item">
+            <div class="num" style="font-size:22px;">포인트 2</div>
+            <div class="desc">두 번째 핵심 포인트 설명</div>
+          </div>
+          <div class="stat-item">
+            <div class="num" style="font-size:22px;">포인트 3</div>
+            <div class="desc">세 번째 핵심 포인트 설명</div>
+          </div>
+        </div>
+        <div class="quote-box">
+          <p>"오늘 강의 전체를 관통하는 한 문장 메시지 — 수강생이 집에 가서도 기억할 문장"</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 17. 마무리 ── -->
+    <!-- CUSTOMIZE: 마무리 슬라이드 -->
+    <div class="slide-card slide-closing" data-section="s5">
+      <div class="cover-tag">Wrap-up</div>
+      <div class="closing-msg">
+        오늘 배운 것,<br>
+        <strong>딱 하나만</strong> 내일 써보세요.
+      </div>
+      <div class="closing-footer">
+        <!-- CUSTOMIZE: 다음 단계 또는 참고 링크 -->
+        다음 단계 안내 또는 참고 자료 링크<br>
+        질문은 편하게 해주세요.
+      </div>
+    </div>
+
+  </div><!-- /slide-area -->
+
+  <!-- 하단 네비게이션 -->
+  <div id="nav-bar">
+    <button class="nav-btn" id="btn-prev">← 이전</button>
+    <div id="progress-wrap"><div id="progress-bar"></div></div>
+    <span id="slide-counter">1 / 18</span>
+    <button class="nav-btn primary" id="btn-next">다음 →</button>
+  </div>
+</div><!-- /main -->
+
+<script>
+const slides = document.querySelectorAll('.slide-card');
+const total = slides.length;
+let current = 0;
+
+const toc = document.getElementById('toc');
+// CUSTOMIZE: simpleToc — 슬라이드 제목과 인덱스를 실제 내용에 맞게 업데이트
+const simpleToc = [
+  { num: '01', text: '표지', slide: 0 },
+  { num: '02', text: '전체 흐름', slide: 1 },
+  { divider: '1부: 1부 제목' },
+  { num: '03', text: '1부 슬라이드 A', slide: 3 },
+  { num: '04', text: '1부 슬라이드 B', slide: 4 },
+  { divider: '2부: 2부 제목' },
+  { num: '05', text: '2부 슬라이드 A', slide: 6 },
+  { num: '06', text: '2부 슬라이드 B', slide: 7 },
+  { divider: '3부: 3부 제목' },
+  { num: '07', text: '3부 슬라이드 A', slide: 9 },
+  { num: '08', text: '3부 슬라이드 B', slide: 10 },
+  { divider: '4부: 4부 제목' },
+  { num: '09', text: '4부 슬라이드 A', slide: 12 },
+  { num: '10', text: '4부 슬라이드 B', slide: 13 },
+  { divider: '5부: 5부 제목' },
+  { num: '11', text: '5부 슬라이드 A', slide: 15 },
+  { num: '12', text: '5부 슬라이드 B', slide: 16 },
+  { num: '13', text: '마무리', slide: 17 },
+];
+
+const tocEls = [];
+simpleToc.forEach(item => {
+  if (item.divider) {
+    const d = document.createElement('div');
+    d.className = 'toc-section';
+    d.textContent = item.divider;
+    toc.appendChild(d);
+  } else {
+    const el = document.createElement('div');
+    el.className = 'toc-item';
+    el.innerHTML = `<span class="toc-num">${item.num}</span><span class="toc-text">${item.text}</span>`;
+    el.addEventListener('click', () => goTo(item.slide));
+    toc.appendChild(el);
+    tocEls.push({ el, slide: item.slide });
+  }
+});
+
+function updateToc() {
+  tocEls.forEach(({ el, slide }) => {
+    el.classList.toggle('active', slide === current);
+  });
+  const active = tocEls.find(t => t.slide === current);
+  if (active) active.el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function goTo(idx) {
+  if (idx < 0 || idx >= total) return;
+  slides[current].classList.remove('active');
+  current = idx;
+  slides[current].classList.add('active');
+  document.getElementById('slide-counter').textContent = `${current + 1} / ${total}`;
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === total - 1;
+  document.getElementById('progress-bar').style.width = `${((current + 1) / total) * 100}%`;
+  updateToc();
+  broadcastSlide(current);
+}
+
+document.getElementById('btn-prev').addEventListener('click', () => goTo(current - 1));
+document.getElementById('btn-next').addEventListener('click', () => goTo(current + 1));
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(current + 1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(current - 1);
+});
+
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 'cc_goto') goTo(parseInt(e.data.idx));
+});
+
+if (new URLSearchParams(location.search).has('embed')) {
+  document.getElementById('sidebar').style.display = 'none';
+  document.getElementById('nav-bar').style.display = 'none';
+}
+
+function broadcastSlide(idx) {
+  try { localStorage.setItem('cc_pres_slide', idx); } catch(e) {}
+}
+window.addEventListener('storage', e => {
+  if (e.key === 'cc_pres_slide') goTo(parseInt(e.newValue));
+});
+
+goTo(0);
+</script>
+</body>
+</html>
